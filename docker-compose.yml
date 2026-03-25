@@ -28,9 +28,9 @@ services:
             - redis
         restart: unless-stopped
         ports:
-            - "80:8000"
-            - "443:443"
-            - "443:443/udp"
+            - '80:8000'
+            - '443:443'
+            - '443:443/udp'
         # Command untuk development dengan watch mode
         command: --watch --workers=1 --max-requests=1
 
@@ -56,9 +56,9 @@ services:
         image: phpmyadmin:apache
         container_name: d_form_phpmyadmin
         ports:
-            - 8080:80
+            - 8090:80
         expose:
-            - 8080
+            - 8090
         networks:
             - default
         depends_on:
@@ -74,18 +74,18 @@ services:
         container_name: d_form_redis
         image: redis:8.0-alpine
         ports:
-            - "${REDIS_PORT:-6379}:6379"
+            - '${REDIS_PORT:-6379}:6379'
         restart: unless-stopped
         volumes:
             - redis_data:/data
         networks:
             - default
-        command: 
+        command:
             - redis-server
             - --appendonly
-            - "yes"
+            - 'yes'
             - --requirepass
-            - "${REDIS_PASSWORD}"
+            - '${REDIS_PASSWORD}'
 
 networks:
     default:

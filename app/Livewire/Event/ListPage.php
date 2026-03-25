@@ -4,33 +4,39 @@ namespace App\Livewire\Event;
 
 use App\Enums\EventCategory;
 use App\Enums\EventSession;
+use App\Enums\EventStatus;
 use App\Models\Event;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\Size;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class ListPage extends Component implements HasSchemas, HasActions
 {
     use InteractsWithSchemas;
     use InteractsWithActions;
+    use WithPagination;
 
     public string $mode = "card";
 
     public array $filter = [
         'categories' => [],
         'sessions' => [],
+        'statuses' => [],
         'showTrashed' => false
     ];
 
@@ -41,7 +47,7 @@ class ListPage extends Component implements HasSchemas, HasActions
 
     public string $search = '';
 
-    public Collection $data;
+    private int $perPage = 10;
 
     public function searchForm(Schema $schema): Schema
     {
@@ -50,37 +56,68 @@ class ListPage extends Component implements HasSchemas, HasActions
                 ->hiddenLabel()
                 ->inputMode('search')
                 ->placeholder(fn () => __('Search by title'))
-                ->debounce(1500)
+                ->live(debounce: 500)
+                ->dehydrateStateUsing(fn ($state) => trim($state))
         ]);
     }
 
     public function filterAction(): Action
     {
         return Action::make('filter')
+            ->modalHeading('filter & sort')
             ->color('primary')
+            ->modalFooterActionsAlignment(Alignment::End)
             ->schema([
                 Grid::make()
                     ->columns([
                         'default' => 2
                     ])
                     ->components([
-                        CheckboxList::make('categories')
-                            ->label(ucfirst(__('events.category')))
+                        CheckboxList::make('filter.categories')
+                            ->label(__('events.category'))
                             ->options(EventCategory::class)
                             ->default($this->filter['categories']),
-                        CheckboxList::make('sessions')
-                            ->label(ucfirst(__('events.session')))
+                        CheckboxList::make('filter.sessions')
+                            ->label(__('events.session'))
                             ->options(EventSession::class)
                             ->default($this->filter['sessions']),
-                        Toggle::make('showTrashed')
+                        CheckboxList::make('filter.statuses')
+                            ->label(__('events.status'))
+                            ->options(EventStatus::class)
+                            ->default($this->filter['statuses']),
+                        Toggle::make('filter.showTrashed')
                             ->label(__("Show trashed"))
                             ->default($this->filter['showTrashed'])
                     ])
+                    ->extraAttributes(['class' => 'capitalize']),
+                Grid::make()
+                    ->columns([
+                        'default' => 2
+                    ])
+                    ->components([
+                        Radio::make('sort.by')
+                            ->label(__("Sort by"))
+                            ->options([
+                                'title' => __('events.title'),
+                                'price' => __('events.price'),
+                                'end_date' => __('events.end_date')
+                            ])
+                            ->default($this->sort['by']),
+                        Radio::make('sort.order')
+                            ->label(__('Sort order'))
+                            ->options([
+                                'asc' => __('Ascending'),
+                                'desc' => __('Descending'),
+                            ])
+                            ->default($this->sort['order']),
+                    ])
+                    ->extraAttributes(['class' => 'capitalize'])
             ])
             ->action(function (array $data) {
-                $this->filter = $data;
+                $this->filter = $data['filter'];
+                $this->sort = $data['sort'];
 
-                $this->queryEvents();
+                $this->resetPage();
             });
     }
 
@@ -95,34 +132,46 @@ class ListPage extends Component implements HasSchemas, HasActions
             ->hiddenLabel()
             ->size(Size::Small)
             ->iconSize(IconSize::Large)
-            ->disabled(function () {
-                return $this->allDataCount === 0;
-            });
+            ->disabled(fn () => $this->allDataCount === 0);
     }
 
-    public function queryEvents(): void
+    #[Computed]
+    public function events()
     {
-        $query = Event::query();
+        $hashedQuery = md5(json_encode([
+            'filter' => $this->filter,
+            'sort' => $this->sort,
+            'search' => $this->search,
+            'pagination' => [
+                'per_page' => $this->perPage,
+                'page' => $this->getPage()
+            ]
+        ]));
 
-        if ($this->filter['showTrashed']) {
-            $query = $query->withTrashed();
-        }
+        return Cache::tags(['events'])->remember("list-page:events:{$hashedQuery}", 3600, function () {
+            $query = Event::query();
 
-        $this->data = $query
-            ->orderBy($this->sort['by'], $this->sort['order'])
-            ->where(function (Builder $query) {
-                if (count($this->filter['categories']) > 0) {
-                    $query = $query->whereIn('category', $this->filter['categories']);
-                }
+            return $query
+                // get trashed events
+                ->when($this->filter['showTrashed'], fn ($q) => $q->withTrashed())
 
-                if (count($this->filter['sessions']) > 0) {
-                    $query = $query->whereIn('session', $this->filter['sessions']);
-                }
+                // filtering by categories
+                ->when(count($this->filter['categories']) > 0, fn ($q) => $q->whereIn('category', $this->filter['categories']))
 
-                return $query
-                    ->whereLike('title', '%' . $this->search . '%');
-            })
-            ->get();
+                // filtering by sessions
+                ->when(count($this->filter['sessions']) > 0, fn ($q) => $q->whereIn('session', $this->filter['sessions']))
+
+                ->when(count($this->filter['statuses']) > 0, fn ($q) => $q->whereIn('status', $this->filter['statuses']))
+
+                // search by title
+                ->when($this->search, fn ($q) => $q->whereLike('title', "%{$this->search}%"))
+
+                ->forListPage()
+
+                // sorting
+                ->orderBy($this->sort['by'], $this->sort['order'])
+                ->paginate($this->perPage);
+        });
     }
 
     public function resetOptions(): void
@@ -131,6 +180,7 @@ class ListPage extends Component implements HasSchemas, HasActions
             'filter' => [
                 'categories' => [],
                 'sessions' => [],
+                'statuses' => [],
                 'showTrashed' => false
             ],
             'sort' => [
@@ -139,13 +189,6 @@ class ListPage extends Component implements HasSchemas, HasActions
             ],
             'search' => ''
         ]);
-    }
-
-    public function clearSearch(): void
-    {
-        $this->reset('search');
-
-        $this->queryEvents();
     }
 
     public function setMode(string $value): void
@@ -157,6 +200,11 @@ class ListPage extends Component implements HasSchemas, HasActions
         $this->mode = $value;
     }
 
+    public function toggleSortOrder()
+    {
+        $this->sort['order'] = $this->sort['order'] === 'asc' ? 'desc' : 'asc';
+    }
+
     public function mount(): void
     {
         $this->fill([
@@ -165,13 +213,13 @@ class ListPage extends Component implements HasSchemas, HasActions
         ]);
 
         $this->resetOptions();
-
-        $this->queryEvents();
     }
 
-    public function updatedSearch(): void
+    public function updatedSearch()
     {
-        $this->queryEvents();
+        $this->search = trim($this->search);
+
+        $this->resetPage();
     }
 
     public function render()
