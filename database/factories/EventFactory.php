@@ -17,21 +17,23 @@ class EventFactory extends Factory
 
     public function definition(): array
     {
+        $startDate = now()->addDays(fake()->numberBetween(-30, 60));
+
         return [
             'title' => fake()->sentence(3),
-            'description' => fake()->paragraph(),
-            'start_date' => now()->addDays(10)->toDateString(),
-            'end_date' => now()->addDays(11)->toDateString(),
-            'registration_start' => now(),
-            'registration_end' => now()->addDays(5),
+            'description' => '<p>' . fake()->paragraph(3) . '</p>',
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $startDate->copy()->addDays(fake()->numberBetween(0, 3))->toDateString(),
+            'registration_start' => $startDate->copy()->subDays(14),
+            'registration_end' => $startDate->copy()->subDays(2),
             'location' => fake()->streetAddress(),
-            'quota' => 50,
+            'quota' => fake()->numberBetween(50, 500),
             'registered_count' => 0,
             'banner' => 'events/banners/placeholder.jpg',
-            'price' => 10000,
-            'session' => EventSession::General,
-            'status' => EventStatus::Draft,
-            'category' => EventCategory::RKT,
+            'price' => fake()->randomElement([0, 10000, 25000, 50000, 75000]),
+            'session' => fake()->randomElement(EventSession::cases()),
+            'status' => fake()->randomElement(EventStatus::cases()),
+            'category' => fake()->randomElement(EventCategory::cases()),
         ];
     }
 }

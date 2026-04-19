@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\Dashboard\HomeController::__invoke
-* @see Http/Controllers/Dashboard/HomeController.php:9
+* @see Http/Controllers/Dashboard/HomeController.php:18
 * @route '/dashboard'
 */
 const HomeController = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ HomeController.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\HomeController::__invoke
-* @see Http/Controllers/Dashboard/HomeController.php:9
+* @see Http/Controllers/Dashboard/HomeController.php:18
 * @route '/dashboard'
 */
 HomeController.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ HomeController.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\HomeController::__invoke
-* @see Http/Controllers/Dashboard/HomeController.php:9
+* @see Http/Controllers/Dashboard/HomeController.php:18
 * @route '/dashboard'
 */
 HomeController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ HomeController.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Dashboard\HomeController::__invoke
-* @see Http/Controllers/Dashboard/HomeController.php:9
+* @see Http/Controllers/Dashboard/HomeController.php:18
 * @route '/dashboard'
 */
 HomeController.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
