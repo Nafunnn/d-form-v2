@@ -1,7 +1,76 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
+import forms from './forms'
+/**
+* @see \App\Http\Controllers\Dashboard\Events\EventController::registrationStatus
+* @see Http/Controllers/Dashboard/Events/EventController.php:86
+* @route '/dashboard/events/{event}/registration-status'
+*/
+export const registrationStatus = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: registrationStatus.url(args, options),
+    method: 'get',
+})
+
+registrationStatus.definition = {
+    methods: ["get","head"],
+    url: '/dashboard/events/{event}/registration-status',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Dashboard\Events\EventController::registrationStatus
+* @see Http/Controllers/Dashboard/Events/EventController.php:86
+* @route '/dashboard/events/{event}/registration-status'
+*/
+registrationStatus.url = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { event: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
+        args = { event: args.id }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            event: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        event: typeof args.event === 'object'
+        ? args.event.id
+        : args.event,
+    }
+
+    return registrationStatus.definition.url
+            .replace('{event}', parsedArgs.event.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Dashboard\Events\EventController::registrationStatus
+* @see Http/Controllers/Dashboard/Events/EventController.php:86
+* @route '/dashboard/events/{event}/registration-status'
+*/
+registrationStatus.get = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: registrationStatus.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Dashboard\Events\EventController::registrationStatus
+* @see Http/Controllers/Dashboard/Events/EventController.php:86
+* @route '/dashboard/events/{event}/registration-status'
+*/
+registrationStatus.head = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: registrationStatus.url(args, options),
+    method: 'head',
+})
+
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::restore
-* @see Http/Controllers/Dashboard/Events/EventController.php:126
+* @see Http/Controllers/Dashboard/Events/EventController.php:134
 * @route '/dashboard/events/{event}/restore'
 */
 export const restore = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +85,7 @@ restore.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::restore
-* @see Http/Controllers/Dashboard/Events/EventController.php:126
+* @see Http/Controllers/Dashboard/Events/EventController.php:134
 * @route '/dashboard/events/{event}/restore'
 */
 restore.url = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
@@ -49,7 +118,7 @@ restore.url = (args: { event: string | { id: string } } | [event: string | { id:
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::restore
-* @see Http/Controllers/Dashboard/Events/EventController.php:126
+* @see Http/Controllers/Dashboard/Events/EventController.php:134
 * @route '/dashboard/events/{event}/restore'
 */
 restore.post = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -59,7 +128,7 @@ restore.post = (args: { event: string | { id: string } } | [event: string | { id
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::index
-* @see Http/Controllers/Dashboard/Events/EventController.php:26
+* @see Http/Controllers/Dashboard/Events/EventController.php:27
 * @route '/dashboard/events'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -74,7 +143,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::index
-* @see Http/Controllers/Dashboard/Events/EventController.php:26
+* @see Http/Controllers/Dashboard/Events/EventController.php:27
 * @route '/dashboard/events'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -83,7 +152,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::index
-* @see Http/Controllers/Dashboard/Events/EventController.php:26
+* @see Http/Controllers/Dashboard/Events/EventController.php:27
 * @route '/dashboard/events'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -93,7 +162,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::index
-* @see Http/Controllers/Dashboard/Events/EventController.php:26
+* @see Http/Controllers/Dashboard/Events/EventController.php:27
 * @route '/dashboard/events'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -103,7 +172,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::create
-* @see Http/Controllers/Dashboard/Events/EventController.php:46
+* @see Http/Controllers/Dashboard/Events/EventController.php:47
 * @route '/dashboard/events/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -118,7 +187,7 @@ create.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::create
-* @see Http/Controllers/Dashboard/Events/EventController.php:46
+* @see Http/Controllers/Dashboard/Events/EventController.php:47
 * @route '/dashboard/events/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -127,7 +196,7 @@ create.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::create
-* @see Http/Controllers/Dashboard/Events/EventController.php:46
+* @see Http/Controllers/Dashboard/Events/EventController.php:47
 * @route '/dashboard/events/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -137,7 +206,7 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::create
-* @see Http/Controllers/Dashboard/Events/EventController.php:46
+* @see Http/Controllers/Dashboard/Events/EventController.php:47
 * @route '/dashboard/events/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -147,7 +216,7 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::store
-* @see Http/Controllers/Dashboard/Events/EventController.php:55
+* @see Http/Controllers/Dashboard/Events/EventController.php:56
 * @route '/dashboard/events'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -162,7 +231,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::store
-* @see Http/Controllers/Dashboard/Events/EventController.php:55
+* @see Http/Controllers/Dashboard/Events/EventController.php:56
 * @route '/dashboard/events'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -171,7 +240,7 @@ store.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::store
-* @see Http/Controllers/Dashboard/Events/EventController.php:55
+* @see Http/Controllers/Dashboard/Events/EventController.php:56
 * @route '/dashboard/events'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -181,7 +250,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::show
-* @see Http/Controllers/Dashboard/Events/EventController.php:70
+* @see Http/Controllers/Dashboard/Events/EventController.php:71
 * @route '/dashboard/events/{event}'
 */
 export const show = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -196,7 +265,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::show
-* @see Http/Controllers/Dashboard/Events/EventController.php:70
+* @see Http/Controllers/Dashboard/Events/EventController.php:71
 * @route '/dashboard/events/{event}'
 */
 show.url = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
@@ -229,7 +298,7 @@ show.url = (args: { event: string | { id: string } } | [event: string | { id: st
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::show
-* @see Http/Controllers/Dashboard/Events/EventController.php:70
+* @see Http/Controllers/Dashboard/Events/EventController.php:71
 * @route '/dashboard/events/{event}'
 */
 show.get = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -239,7 +308,7 @@ show.get = (args: { event: string | { id: string } } | [event: string | { id: st
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::show
-* @see Http/Controllers/Dashboard/Events/EventController.php:70
+* @see Http/Controllers/Dashboard/Events/EventController.php:71
 * @route '/dashboard/events/{event}'
 */
 show.head = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -249,7 +318,7 @@ show.head = (args: { event: string | { id: string } } | [event: string | { id: s
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::edit
-* @see Http/Controllers/Dashboard/Events/EventController.php:87
+* @see Http/Controllers/Dashboard/Events/EventController.php:95
 * @route '/dashboard/events/{event}/edit'
 */
 export const edit = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -264,7 +333,7 @@ edit.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::edit
-* @see Http/Controllers/Dashboard/Events/EventController.php:87
+* @see Http/Controllers/Dashboard/Events/EventController.php:95
 * @route '/dashboard/events/{event}/edit'
 */
 edit.url = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
@@ -297,7 +366,7 @@ edit.url = (args: { event: string | { id: string } } | [event: string | { id: st
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::edit
-* @see Http/Controllers/Dashboard/Events/EventController.php:87
+* @see Http/Controllers/Dashboard/Events/EventController.php:95
 * @route '/dashboard/events/{event}/edit'
 */
 edit.get = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -307,7 +376,7 @@ edit.get = (args: { event: string | { id: string } } | [event: string | { id: st
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::edit
-* @see Http/Controllers/Dashboard/Events/EventController.php:87
+* @see Http/Controllers/Dashboard/Events/EventController.php:95
 * @route '/dashboard/events/{event}/edit'
 */
 edit.head = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -317,7 +386,7 @@ edit.head = (args: { event: string | { id: string } } | [event: string | { id: s
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::update
-* @see Http/Controllers/Dashboard/Events/EventController.php:97
+* @see Http/Controllers/Dashboard/Events/EventController.php:105
 * @route '/dashboard/events/{event}'
 */
 export const update = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -332,7 +401,7 @@ update.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::update
-* @see Http/Controllers/Dashboard/Events/EventController.php:97
+* @see Http/Controllers/Dashboard/Events/EventController.php:105
 * @route '/dashboard/events/{event}'
 */
 update.url = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
@@ -365,7 +434,7 @@ update.url = (args: { event: string | { id: string } } | [event: string | { id: 
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::update
-* @see Http/Controllers/Dashboard/Events/EventController.php:97
+* @see Http/Controllers/Dashboard/Events/EventController.php:105
 * @route '/dashboard/events/{event}'
 */
 update.put = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -375,7 +444,7 @@ update.put = (args: { event: string | { id: string } } | [event: string | { id: 
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::update
-* @see Http/Controllers/Dashboard/Events/EventController.php:97
+* @see Http/Controllers/Dashboard/Events/EventController.php:105
 * @route '/dashboard/events/{event}'
 */
 update.patch = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -385,7 +454,7 @@ update.patch = (args: { event: string | { id: string } } | [event: string | { id
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::destroy
-* @see Http/Controllers/Dashboard/Events/EventController.php:112
+* @see Http/Controllers/Dashboard/Events/EventController.php:120
 * @route '/dashboard/events/{event}'
 */
 export const destroy = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -400,7 +469,7 @@ destroy.definition = {
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::destroy
-* @see Http/Controllers/Dashboard/Events/EventController.php:112
+* @see Http/Controllers/Dashboard/Events/EventController.php:120
 * @route '/dashboard/events/{event}'
 */
 destroy.url = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
@@ -433,7 +502,7 @@ destroy.url = (args: { event: string | { id: string } } | [event: string | { id:
 
 /**
 * @see \App\Http\Controllers\Dashboard\Events\EventController::destroy
-* @see Http/Controllers/Dashboard/Events/EventController.php:112
+* @see Http/Controllers/Dashboard/Events/EventController.php:120
 * @route '/dashboard/events/{event}'
 */
 destroy.delete = (args: { event: string | { id: string } } | [event: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
@@ -441,7 +510,124 @@ destroy.delete = (args: { event: string | { id: string } } | [event: string | { 
     method: 'delete',
 })
 
+/**
+* @see routes/web/admin/index.php:47
+* @route '/dashboard/events/{event}/scan'
+*/
+export const scan = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: scan.url(args, options),
+    method: 'get',
+})
+
+scan.definition = {
+    methods: ["get","head"],
+    url: '/dashboard/events/{event}/scan',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web/admin/index.php:47
+* @route '/dashboard/events/{event}/scan'
+*/
+scan.url = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { event: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            event: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        event: args.event,
+    }
+
+    return scan.definition.url
+            .replace('{event}', parsedArgs.event.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see routes/web/admin/index.php:47
+* @route '/dashboard/events/{event}/scan'
+*/
+scan.get = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: scan.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see routes/web/admin/index.php:47
+* @route '/dashboard/events/{event}/scan'
+*/
+scan.head = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: scan.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see routes/web/admin/index.php:50
+* @route '/dashboard/events/{event}/registrants'
+*/
+export const registrants = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: registrants.url(args, options),
+    method: 'get',
+})
+
+registrants.definition = {
+    methods: ["get","head"],
+    url: '/dashboard/events/{event}/registrants',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see routes/web/admin/index.php:50
+* @route '/dashboard/events/{event}/registrants'
+*/
+registrants.url = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { event: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            event: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        event: args.event,
+    }
+
+    return registrants.definition.url
+            .replace('{event}', parsedArgs.event.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see routes/web/admin/index.php:50
+* @route '/dashboard/events/{event}/registrants'
+*/
+registrants.get = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: registrants.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see routes/web/admin/index.php:50
+* @route '/dashboard/events/{event}/registrants'
+*/
+registrants.head = (args: { event: string | number } | [event: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: registrants.url(args, options),
+    method: 'head',
+})
+
 const events = {
+    registrationStatus: Object.assign(registrationStatus, registrationStatus),
     restore: Object.assign(restore, restore),
     index: Object.assign(index, index),
     create: Object.assign(create, create),
@@ -450,6 +636,9 @@ const events = {
     edit: Object.assign(edit, edit),
     update: Object.assign(update, update),
     destroy: Object.assign(destroy, destroy),
+    scan: Object.assign(scan, scan),
+    forms: Object.assign(forms, forms),
+    registrants: Object.assign(registrants, registrants),
 }
 
 export default events
