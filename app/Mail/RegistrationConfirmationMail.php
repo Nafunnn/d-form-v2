@@ -19,7 +19,9 @@ class RegistrationConfirmationMail extends Mailable
     public function __construct(
         public FormAnswer $submission,
         public array $answersSummary,
-    ) {}
+        public string $qrPngBinary,
+    ) {
+    }
 
     public function envelope(): Envelope
     {
@@ -41,6 +43,7 @@ class RegistrationConfirmationMail extends Mailable
                 'form' => $this->submission->form,
                 'user' => $this->submission->user,
                 'answersSummary' => $this->answersSummary,
+                'qrBase64' => base64_encode($this->qrPngBinary),
                 'registrationDetailsUrl' => RegistrationPortalLinks::registrationDetailsUrl($this->submission->form->event),
             ],
         );

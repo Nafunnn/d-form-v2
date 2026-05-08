@@ -8,6 +8,7 @@ use App\Mail\RegistrationConfirmationMail;
 use App\Models\EmailLog;
 use App\Models\FormAnswer;
 use App\Services\Registration\RegistrationAnswersSummarizer;
+use App\Services\Registration\RegistrationQrPngGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -19,10 +20,13 @@ class SendRegistrationConfirmationJob implements ShouldQueue
 
     public function __construct(
         public string $formAnswerId,
-    ) {}
+    ) {
+    }
 
-    public function handle(RegistrationAnswersSummarizer $summarizer): void
-    {
+    public function handle(
+        RegistrationAnswersSummarizer $summarizer,
+        RegistrationQrPngGenerator $qrGenerator,
+    ): void {
         $submission = FormAnswer::query()
             ->with(['form.event', 'user'])
             ->find($this->formAnswerId);
@@ -66,10 +70,11 @@ class SendRegistrationConfirmationJob implements ShouldQueue
         }
 
         $answersSummary = $summarizer->summarize($submission);
+        $qrPng = $qrGenerator->pngForSubmission($submission->id);
 
         try {
             Mail::to($user->email)->send(
-                new RegistrationConfirmationMail($submission, $answersSummary)
+                new RegistrationConfirmationMail($submission, $answersSummary, $qrPng)
             );
 
             EmailLog::query()->create([

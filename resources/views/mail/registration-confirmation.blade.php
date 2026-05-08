@@ -63,6 +63,14 @@
                         </td>
                     </tr>
                     @endif
+                    <tr>
+                        <td style="padding:8px 28px 4px;text-align:center;">
+                            <p style="margin:0 0 8px;font-size:14px;font-weight:600;">{{ __('Attendance QR code') }}</p>
+                            <p style="margin:0 0 12px;font-size:12px;color:#6b7280;">{{ __('This QR is tied to your submission. Present it for check-in at the event.') }}</p>
+                            <img src="data:image/png;base64,{{ $qrBase64 }}" alt="{{ __('Attendance QR code') }}" width="240" height="240" style="display:inline-block;border:1px solid #e5e7eb;border-radius:8px;">
+                            <p style="margin:12px 0 0;font-size:11px;color:#9ca3af;">{{ __('Submission ID') }}: {{ $submission->id }}</p>
+                        </td>
+                    </tr>
                     @include('mail.partials.registration-details-button')
                     <tr>
                         <td style="padding:20px 28px 24px;">
