@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\Form;
 use App\Models\FormAnswer;
 use App\Models\User;
+use App\Services\Registration\RegistrationQrPngGenerator;
 use App\Support\RegistrationPortalLinks;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -138,7 +139,8 @@ class UserEventRegistrationPortalTest extends TestCase
         foreach ([false, true] as $useUuid) {
             $this->actingAs($member)->get($this->registrationUrl($event, $useUuid))
                 ->assertOk()
-                ->assertInertia(fn ($page) => $page
+                ->assertInertia(
+                    fn ($page) => $page
                     ->component('Dashboard/User/EventRegistration')
                     ->where('event.slug', $event->slug)
                     ->where('registration.review_status', 'pending')
@@ -165,7 +167,8 @@ class UserEventRegistrationPortalTest extends TestCase
 
         $this->actingAs($member)->get($this->registrationUrl($event))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
+            ->assertInertia(
+                fn ($page) => $page
                 ->component('Dashboard/User/EventRegistration')
                 ->where('registration.review_status', 'accepted')
                 ->where('registration.registration_code', 'CHK-999')
@@ -189,7 +192,8 @@ class UserEventRegistrationPortalTest extends TestCase
 
         $this->actingAs($member)->get($this->registrationUrl($event))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
+            ->assertInertia(
+                fn ($page) => $page
                 ->component('Dashboard/User/EventRegistration')
                 ->where('registration.review_status', 'rejected')
                 ->where('registration.registration_code', null)
@@ -213,8 +217,11 @@ class UserEventRegistrationPortalTest extends TestCase
 
         $expectedUrl = RegistrationPortalLinks::registrationDetailsUrl($event);
 
-        $confirmation = new RegistrationConfirmationMail($answer, []);
-        $this->assertStringContainsString($expectedUrl, $confirmation->render());
+        $qrPng = app(RegistrationQrPngGenerator::class)->pngForSubmission($answer->id);
+        $confirmation = new RegistrationConfirmationMail($answer, [], $qrPng);
+        $html = $confirmation->render();
+        $this->assertStringContainsString($expectedUrl, $html);
+        $this->assertStringContainsString('data:image/png;base64,', $html);
 
         $rejected = new RegistrationRejectedMail($answer);
         $this->assertStringContainsString($expectedUrl, $rejected->render());

@@ -18,5 +18,9 @@
 @endforeach
 @endif
 
+{{ __('Submission ID') }}: {{ $submission->id }}
+
+{{ __('The attendance QR image is included in the HTML version of this email.') }}
+
 {{ __('View registration details') }}:
 {{ $registrationDetailsUrl }}
