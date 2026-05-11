@@ -80,6 +80,9 @@ const breadcrumbs = computed<{ label: string; href?: string }[]>(() => {
                 } else if (sub === 'scan') {
                     crumbs.push({ label: eventTitle, href: eventHref });
                     crumbs.push({ label: 'Check-in' });
+                } else if (sub === 'laporan') {
+                    crumbs.push({ label: eventTitle, href: eventHref });
+                    crumbs.push({ label: 'Laporan' });
                 } else {
                     crumbs.push({ label: eventTitle });
                 }

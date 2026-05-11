@@ -49,6 +49,11 @@ export const lotties = {
         src: '/lotties/empty-data.json',
         label: 'Ilustrasi data kosong',
     },
+    /** Waiting / empty roster — asset from LottieFiles (robot idle). */
+    registrantsWaiting: {
+        src: '/lotties/registrants-waiting.json',
+        label: 'Ilustrasi menunggu pendaftar',
+    },
     successCheck: {
         src: '/lotties/success-check.json',
         label: 'Ilustrasi berhasil',

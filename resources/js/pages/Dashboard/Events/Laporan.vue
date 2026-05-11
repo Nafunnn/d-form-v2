@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import DashboardFocusLayout from '@/layouts/DashboardFocusLayout.vue'
 import PageHeader from '@/components/modules/dashboard/PageHeader.vue'
 import KpiCard from '@/components/modules/dashboard/KpiCard.vue'
 import EventReportingFocusPanel from '@/components/modules/dashboard/EventReportingFocusPanel.vue'
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { BarChart3, ClipboardList, ScanLine, Download } from 'lucide-vue-next'
 
-defineOptions({ layout: DashboardLayout })
+defineOptions({ layout: DashboardFocusLayout })
 
 const props = defineProps<{
     globalSummary: {
@@ -44,7 +44,6 @@ const props = defineProps<{
     }
 }>()
 
-const eventShowHref = `/admin/dashboard/events/${props.event.id}`
 </script>
 
 <template>
@@ -55,7 +54,6 @@ const eventShowHref = `/admin/dashboard/events/${props.event.id}`
             eyebrow="Pelaporan"
             title="Laporan"
             subtitle="Unduhan CSV pendaftaran, kehadiran, dan ringkasan untuk acara ini."
-            :back-href="eventShowHref"
         />
 
         <div class="grid gap-4 sm:grid-cols-3">

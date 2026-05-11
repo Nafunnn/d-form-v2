@@ -97,6 +97,13 @@ const emptyDescription = computed(() =>
                         <div class="pointer-events-none absolute inset-0 z-1 bg-linear-to-t from-black/35 via-transparent to-transparent" />
                         <div class="absolute left-2.5 top-2.5 z-2 flex flex-wrap gap-1.5">
                             <Badge
+                                v-if="!isBrowse && event.pending_team_invitation_url"
+                                variant="secondary"
+                                class="border border-amber-500/40 bg-amber-500/15 text-[10px] font-semibold text-amber-950 shadow-xs dark:text-amber-100"
+                            >
+                                Diundang
+                            </Badge>
+                            <Badge
                                 v-for="cat in toCategoryList(event.category)"
                                 :key="cat"
                                 class="text-[10px] text-white shadow-xs"

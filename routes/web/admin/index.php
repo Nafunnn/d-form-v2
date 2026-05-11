@@ -2,12 +2,15 @@
 
 use App\Enums\EventStatus;
 use App\Enums\FormAnswerReviewStatus;
+use App\Enums\MemberConfirmationStatus;
+use App\Enums\RegistrationRole;
 use App\Http\Controllers\Dashboard\Events\AttendanceScanController;
 use App\Http\Controllers\Dashboard\Events\EventRegistrantsController;
 use App\Http\Controllers\Dashboard\User\TeamInvitationController;
 use App\Http\Controllers\Dashboard\User\UserEventRegistrationController;
 use App\Http\Controllers\Dashboard\User\UserEventRegistrationFormPickerController;
 use App\Models\Event;
+use App\Models\FormAnswer;
 use App\Services\Event\EventService;
 use App\Services\Event\UserPortalEventResolver;
 use App\Services\Registration\RegistrationQrPngGenerator;
@@ -55,13 +58,36 @@ Route::middleware(['auth', 'member_portal'])->prefix('/user/dashboard')->name('d
                 });
             })
             ->orderByDesc('start_date')
-            ->get()
-            ->map(fn (Event $e) => $eventService->eventToInertiaArray($e))
+            ->get();
+
+        $pendingInviteRows = FormAnswer::query()
+            ->join('forms', 'forms.id', '=', 'form_answers.form_id')
+            ->where('form_answers.user_id', $userId)
+            ->where('form_answers.registration_role', RegistrationRole::Member->value)
+            ->where('form_answers.member_confirmation_status', MemberConfirmationStatus::Pending->value)
+            ->whereNotNull('form_answers.invitation_token')
+            ->select(['form_answers.invitation_token', 'forms.event_id'])
+            ->get();
+
+        $inviteUrlByEventId = [];
+        foreach ($pendingInviteRows as $row) {
+            $inviteUrlByEventId[$row->event_id] = route('dashboard.user.team-invitations.show', ['token' => $row->invitation_token], false);
+        }
+
+        $payload = $events
+            ->map(function (Event $e) use ($eventService, $inviteUrlByEventId): array {
+                $data = $eventService->eventToInertiaArray($e);
+                if (isset($inviteUrlByEventId[$e->id])) {
+                    $data['pending_team_invitation_url'] = $inviteUrlByEventId[$e->id];
+                }
+
+                return $data;
+            })
             ->values()
             ->all();
 
         return inertia('Dashboard/User/Events', [
-            'events' => $events,
+            'events' => $payload,
             'listMode' => 'mine',
         ]);
     })->name('events');
@@ -100,7 +126,7 @@ Route::middleware(['auth', 'member_portal'])->prefix('/user/dashboard')->name('d
         $event = app(UserPortalEventResolver::class)->resolvePublished($event_segment);
 
         $user = auth()->user();
-        $registration = \App\Models\FormAnswer::query()
+        $registration = FormAnswer::query()
             ->where('user_id', $user->id)
             ->whereHas('form', function ($q) use ($event) {
                 $q->where('event_id', $event->id);
@@ -109,9 +135,20 @@ Route::middleware(['auth', 'member_portal'])->prefix('/user/dashboard')->name('d
             ->orderByDesc('created_at')
             ->first();
 
+        $hasPendingTeamInvitation = $registration?->isMemberPendingInvitation() ?? false;
+        $pendingTeamInvitationUrl = null;
+        if ($hasPendingTeamInvitation) {
+            $token = $registration->invitation_token;
+            if (is_string($token) && $token !== '') {
+                $pendingTeamInvitationUrl = route('dashboard.user.team-invitations.show', ['token' => $token], false);
+            }
+        }
+
+        $isPortalRegistered = (bool) $registration && ! $hasPendingTeamInvitation;
+
         $qrBase64 = null;
         $registrationCode = null;
-        if ($registration && $registration->review_status === FormAnswerReviewStatus::Accepted) {
+        if ($isPortalRegistered && $registration->review_status === FormAnswerReviewStatus::Accepted) {
             $registrationCode = $registration->registration_code;
             $png = $qrGenerator->pngForSubmission($registration->id);
             $qrBase64 = base64_encode($png);
@@ -119,8 +156,9 @@ Route::middleware(['auth', 'member_portal'])->prefix('/user/dashboard')->name('d
 
         return inertia('Dashboard/User/EventDetail', [
             'event' => $eventService->eventToInertiaArray($event),
-            'isRegistered' => (bool) $registration,
-            'registrationStatus' => $registration?->review_status?->value,
+            'isRegistered' => $isPortalRegistered,
+            'pendingTeamInvitationUrl' => $pendingTeamInvitationUrl,
+            'registrationStatus' => $isPortalRegistered ? $registration?->review_status?->value : null,
             'qr_base64' => $qrBase64,
             'registration_code' => $registrationCode,
         ]);

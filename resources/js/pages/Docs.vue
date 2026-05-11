@@ -675,7 +675,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                                 Daftar Peserta
                             </h2>
                             <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
-                                Halaman Registrants menampilkan semua peserta yang sudah mendaftar ke acara, dari formulir utama (pertama berdasarkan judul). Tersedia fitur pencarian nama/email dan filter berdasarkan status review. Setiap baris menampilkan ringkasan jawaban yang disederhanakan.
+                                Halaman Registrants menampilkan peserta dari seluruh formulir acara (gabungan pengiriman), dengan kolom sumber form, pencarian nama/email/kode/judul form, dan filter status review serta filter per formulir.
                             </p>
                         </section>
 

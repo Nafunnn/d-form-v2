@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
-    Pencil, Trash2, RotateCcw, Download, Upload, QrCode, FileText, Users, FileSpreadsheet, BarChart3,
+    Pencil, Trash2, RotateCcw, Download, QrCode, FileText, Users, FileSpreadsheet, BarChart3,
 } from 'lucide-vue-next'
 import { edit as editEvent } from '@/actions/App/Http/Controllers/Dashboard/Events/EventController'
 
@@ -20,8 +20,6 @@ defineProps<{
 }>()
 
 defineEmits<{
-    exportExcel: []
-    openImport: []
     openArchive: []
     openRestore: []
 }>()
@@ -72,17 +70,6 @@ defineEmits<{
                         <TooltipContent>Export attendance scan log (CSV)</TooltipContent>
                     </Tooltip>
                 </div>
-                <Tooltip>
-                    <TooltipTrigger as-child>
-                        <Button variant="outline" size="sm" class="w-full justify-start rounded-xl" @click="$emit('exportExcel')">
-                            <FileSpreadsheet class="mr-2 size-4" />Excel export
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Excel export not implemented yet.</TooltipContent>
-                </Tooltip>
-                <Button variant="outline" size="sm" class="w-full justify-start rounded-xl" @click="$emit('openImport')">
-                    <Upload class="mr-2 size-4" />Import registrants
-                </Button>
             </CardContent>
         </Card>
 
