@@ -2,14 +2,6 @@
 import { Button } from '@/components/ui/button'
 import { redirectToGithub, redirectToGoogle } from '@/actions/App/Http/Controllers/Auth/OAuthController'
 
-/**
- * OAuth harus pakai navigasi browser penuh.
- * Inertia v2 mengintersept klik pada <Link> dan bahkan <a> same-origin,
- * sehingga redirect 302 ke Google/GitHub diikuti sebagai XHR yang diblok CORS.
- * Solusi: gunakan window.location.href secara eksplisit agar browser
- * melakukan full-page navigation dan melewati semua intersepsi Inertia.
- */
-
 function goToGoogle() {
     window.location.href = redirectToGoogle.url()
 }
