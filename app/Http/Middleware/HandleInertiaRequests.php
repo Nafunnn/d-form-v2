@@ -9,6 +9,20 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    private static function absolutePublicUrl(\Illuminate\Http\Request $request, string $pathOrUrl): ?string
+    {
+        $pathOrUrl = trim($pathOrUrl);
+        if ($pathOrUrl === '') {
+            return null;
+        }
+
+        if (str_starts_with($pathOrUrl, 'http://') || str_starts_with($pathOrUrl, 'https://')) {
+            return $pathOrUrl;
+        }
+
+        return $request->getSchemeAndHttpHost().'/'.ltrim($pathOrUrl, '/');
+    }
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -51,6 +65,19 @@ class HandleInertiaRequests extends Middleware
                     'avatar' => UserAvatarService::resolvePublicUrl($user->avatar, $request),
                 ],
             ) : null,
+            'seo' => [
+                'siteName' => (string) config('seo.site_name'),
+                'siteUrl' => rtrim((string) config('app.url'), '/'),
+                'defaultDescription' => (string) config('seo.default_description'),
+                'locale' => (string) config('seo.locale'),
+                'htmlLang' => (string) config('seo.html_lang'),
+                'defaultOgImage' => self::absolutePublicUrl($request, (string) config('seo.default_og_image')),
+                'twitterSite' => config('seo.twitter_site') ? '@'.ltrim((string) config('seo.twitter_site'), '@') : null,
+                'twitterCreator' => config('seo.twitter_creator') ? '@'.ltrim((string) config('seo.twitter_creator'), '@') : null,
+                'googleSiteVerification' => config('seo.google_site_verification'),
+                'bingSiteVerification' => config('seo.bing_site_verification'),
+                'yandexVerification' => config('seo.yandex_verification'),
+            ],
         ];
     }
 }

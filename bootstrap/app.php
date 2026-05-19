@@ -35,7 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $middleware->web(append: [
-            HandleInertiaRequests::class
+            HandleInertiaRequests::class,
+            \App\Http\Middleware\AddRobotsTagForPrivateAreas::class,
         ]);
 
         $middleware->alias([

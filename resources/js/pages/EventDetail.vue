@@ -1,15 +1,85 @@
 <script setup lang="ts">
 import LandingLayout from '@/layouts/LandingLayout.vue';
+import SeoHead from '@/components/seo/SeoHead.vue';
 import { computed, ref, onMounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { MapPin, CalendarDays, ArrowRight, Check, Shield } from 'lucide-vue-next';
 import { formatDate, categoryLabelMap, categoryColorMap, sessionLabelMap } from '@/lib/dummyData';
 import { toCategoryList } from '@/lib/eventCategories';
+import { stripHtmlToText } from '@/utils/stripHtml';
+import type { SharedSeoProps } from '@/types/seo';
 
 const props = defineProps<{
     event: IEvent;
 }>();
 
+const page = usePage();
+const seo = computed(() => (page.props as { seo: SharedSeoProps }).seo);
+
 const event = computed(() => props.event);
+
+const metaDescription = computed(() => {
+    const plain = stripHtmlToText(event.value.description, 170);
+    if (plain) {
+        return plain;
+    }
+    return `${event.value.title} — ${formatDate(event.value.start_date)} · ${event.value.location}`;
+});
+
+const canonicalPath = computed(() => `/events/${event.value.slug}`);
+
+const eventJsonLd = computed<Record<string, unknown>[]>(() => {
+    const e = event.value;
+    const base = seo.value.siteUrl;
+    const pageUrl = `${base}/events/${e.slug}`;
+    const images = e.banner_url ? [e.banner_url] : undefined;
+
+    let availability = 'https://schema.org/InStock';
+    if (e.registration_status === 'full') {
+        availability = 'https://schema.org/SoldOut';
+    }
+    if (e.registration_status === 'closed' || e.registration_status === 'not_yet_open') {
+        availability = 'https://schema.org/PreOrder';
+    }
+
+    const eventSchema: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: e.title,
+        description: stripHtmlToText(e.description, 8000),
+        startDate: e.start_date,
+        endDate: e.end_date,
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+            '@type': 'Place',
+            name: e.location,
+            address: e.location,
+        },
+        url: pageUrl,
+        offers: {
+            '@type': 'Offer',
+            price: e.price,
+            priceCurrency: 'IDR',
+            availability,
+            url: pageUrl,
+        },
+    };
+    if (images) {
+        eventSchema.image = images;
+    }
+
+    const crumbs: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Beranda', item: `${base}/` },
+            { '@type': 'ListItem', position: 2, name: 'Acara', item: `${base}/events` },
+            { '@type': 'ListItem', position: 3, name: e.title, item: pageUrl },
+        ],
+    };
+
+    return [eventSchema, crumbs];
+});
 
 const visible = ref<boolean>(false);
 onMounted(() => setTimeout(() => (visible.value = true), 100));
@@ -41,6 +111,14 @@ const highlights: string[] = [
 
 <template>
     <LandingLayout>
+        <SeoHead
+            :title="event.title"
+            :description="metaDescription"
+            :canonical-path="canonicalPath"
+            :og-image="event.banner_url"
+            og-type="website"
+            :json-ld="eventJsonLd"
+        />
         <section class="relative bg-background pt-20 sm:pt-24 lg:pt-20">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="rounded-[2rem] bg-muted/40 p-1.5 ring-1 ring-border/70 sm:p-2 lg:rounded-[2.25rem]">

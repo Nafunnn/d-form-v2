@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import LandingLayout from '@/layouts/LandingLayout.vue'
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import {
     BookOpen, Rocket, FormInput, Users, ShieldCheck, BarChart3,
     QrCode, Download, Palette, CalendarPlus, PenTool, Eye,
@@ -9,6 +9,30 @@ import {
     ToggleRight, Layers, FileText, Database, Code2, Lock,
     Settings,
 } from 'lucide-vue-next'
+import SeoHead from '@/components/seo/SeoHead.vue'
+import { usePage } from '@inertiajs/vue3'
+import type { SharedSeoProps } from '@/types/seo'
+
+const page = usePage()
+const seo = computed(() => (page.props as { seo: SharedSeoProps }).seo)
+
+const docsDescription = computed(
+    () =>
+        `Dokumentasi resmi ${seo.value.siteName}: registrasi, menjelajah acara, mengisi formulir, absensi QR, peran organizer dan tim, serta tips integrasi.`,
+)
+
+const docsJsonLd = computed<Record<string, unknown>>(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: 'Dokumentasi DForm',
+    description: docsDescription.value,
+    url: `${seo.value.siteUrl}/docs`,
+    isPartOf: {
+        '@type': 'WebSite',
+        name: seo.value.siteName,
+        url: `${seo.value.siteUrl}/`,
+    },
+}))
 
 const activeSection = ref('introduction')
 const mobileNavOpen = ref(false)
@@ -101,6 +125,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 <template>
     <LandingLayout>
+        <SeoHead title="Dokumentasi" :description="docsDescription" canonical-path="/docs" :json-ld="docsJsonLd" />
         <!-- Hero -->
         <section class="relative overflow-hidden border-b border-border/30 bg-muted/20 pt-32 pb-16 md:pt-40 md:pb-20">
             <div class="pointer-events-none absolute inset-0 app-noise opacity-30" aria-hidden="true" />
