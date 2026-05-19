@@ -1,5 +1,6 @@
 // global.d.ts
 import '@inertiajs/core';
+import type { SharedSeoProps } from './seo';
 
 interface IUser {
     id: string;
@@ -21,6 +22,7 @@ interface IUser {
 interface IProps {
     auth: { user: IUser | null };
     appName: string;
+    seo: SharedSeoProps;
 }
 
 declare module '@inertiajs/core' {
