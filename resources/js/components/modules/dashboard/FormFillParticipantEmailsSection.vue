@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import type { FormFillPageContext } from '@/utils/composables/useFormFillPage'
 import { CheckCircle2, ChevronDown, Loader2, UserRound, XCircle } from 'lucide-vue-next'
 import { routes } from '@/lib/routes'
+import { humanizeErrorMessage } from '@/lib/error-message'
 
 const CHECK_EMAIL_URL = routes.member.checkEmail
 const DEBOUNCE_MS = 1000
@@ -156,7 +157,7 @@ async function runEmailCheck(slot: number) {
         return
     }
     if (!validEmailFormat(raw)) {
-        setCheckState(slot, 'invalid', undefined, 'Enter a valid email address.')
+        setCheckState(slot, 'invalid', undefined, humanizeErrorMessage('Enter a valid email address.'))
         return
     }
 
@@ -195,21 +196,26 @@ async function runEmailCheck(slot: number) {
                 slot,
                 'error',
                 undefined,
-                (body.message as string | undefined) || 'Could not verify this email.',
+                humanizeErrorMessage((body.message as string | undefined) || 'Could not verify this email.'),
             )
             return
         }
 
         if (body.exists && body.data) {
-            setCheckState(slot, 'found', body.data, body.message ?? '')
+            setCheckState(slot, 'found', body.data, humanizeErrorMessage(body.message ?? ''))
         } else {
-            setCheckState(slot, 'not_found', undefined, body.message ?? 'No account exists for this email.')
+            setCheckState(
+                slot,
+                'not_found',
+                undefined,
+                humanizeErrorMessage(body.message ?? 'No account exists for this email.'),
+            )
         }
     } catch (e) {
         if ((e as Error).name === 'AbortError') {
             return
         }
-        setCheckState(slot, 'error', undefined, 'Could not verify this email. Try again.')
+        setCheckState(slot, 'error', undefined, humanizeErrorMessage('Could not verify this email. Try again.'))
     }
 }
 
@@ -224,7 +230,7 @@ function scheduleCheck(slot: number) {
     if (!validEmailFormat(raw)) {
         abortBySlot.get(slot)?.abort()
         debouncedEmailCheck.cancel(slot)
-        setCheckState(slot, 'invalid', undefined, 'Enter a valid email address.')
+        setCheckState(slot, 'invalid', undefined, humanizeErrorMessage('Enter a valid email address.'))
         return
     }
     const selfEmail = currentUserEmail.value
@@ -238,7 +244,12 @@ function scheduleCheck(slot: number) {
     if (isBundleMode.value) {
         abortBySlot.get(slot)?.abort()
         debouncedEmailCheck.cancel(slot)
-        setCheckState(slot, 'valid', undefined, 'Participant will receive their ticket by email.')
+        setCheckState(
+            slot,
+            'valid',
+            undefined,
+            humanizeErrorMessage('Participant will receive their ticket by email.'),
+        )
         return
     }
 

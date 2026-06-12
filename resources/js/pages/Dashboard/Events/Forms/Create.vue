@@ -2,6 +2,7 @@
 import { ref, reactive } from 'vue'
 import { Head, useForm } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
+import { handleInertiaFormErrors, humanizeErrorMessage } from '@/lib/error-message'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import FormBuilderWorkspace from '@/components/modules/builder/FormBuilderWorkspace.vue'
 import { defaultFormBannerState, prependFormBannerToBackendPayload } from '@/components/modules/builder/formBanner'
@@ -56,10 +57,9 @@ function onSave(): void {
 
     isSaving.value = true
     createForm.post(routes.admin.events.forms.store(props.event.id), {
-        onSuccess: () => toast.success('Form created successfully!'),
-        onError: (err) => {
-            const first = Object.values(err)[0]
-            toast.error(typeof first === 'string' ? first : 'Failed to create form.')
+        onSuccess: () => toast.success(humanizeErrorMessage('Form created successfully!')),
+        onError: (errors) => {
+            handleInertiaFormErrors(errors, { title: 'Gagal membuat form' })
         },
         onFinish: () => {
             isSaving.value = false

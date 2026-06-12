@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Link, useForm, usePage } from '@inertiajs/vue3'
+import { Link, useForm } from '@inertiajs/vue3'
 import { Check, Circle } from 'lucide-vue-next'
 import { AuthField } from '@/components/core/field'
 import { AuthSubmitButton } from '@/components/core/button'
 import { index as loginPage } from '@/actions/App/Http/Controllers/Auth/LoginController'
 import { store as register } from '@/actions/App/Http/Controllers/Auth/RegisterController'
-import { toast } from 'vue-sonner'
+import { getFieldError, handleInertiaFormErrors, showErrorToast } from '@/lib/error-message'
 import type { PasswordRule, PasswordStrength } from '@/types/auth'
-
-const page = usePage()
 
 const form = useForm({
     name: '',
@@ -72,23 +70,17 @@ const strengthBadgeClass = computed<string>(() => {
 
 function submit(): void {
     if (form.password.length < 8) {
-        toast.error('Password must be at least 8 characters.')
+        showErrorToast('Password must be at least 8 characters.')
         return
     }
     if (form.password !== form.password_confirmation) {
-        toast.error('Password does not match')
+        showErrorToast('Password does not match')
         return
     }
 
     form.submit(register(), {
-        onFinish: () => {
-            const t = page.flash.toast
-            if (!t) return
-            if (t.type === 'success') {
-                toast.success(t.message)
-            } else {
-                toast.error(t.message)
-            }
+        onError: (errors) => {
+            handleInertiaFormErrors(errors, { title: 'Gagal mendaftar' })
         },
     })
 }
@@ -107,7 +99,7 @@ function submit(): void {
             <AuthField
                 label="Name"
                 type="name"
-                :error="form.errors.name"
+                :error="getFieldError(form.errors, 'name')"
                 id="register-name"
                 v-model="form.name"
                 required
@@ -118,7 +110,7 @@ function submit(): void {
             <AuthField
                 label="Email"
                 type="email"
-                :error="form.errors.email"
+                :error="getFieldError(form.errors, 'email')"
                 id="register-email"
                 v-model="form.email"
                 required
@@ -129,7 +121,7 @@ function submit(): void {
             <AuthField
                 label="Password"
                 type="password"
-                :error="form.errors.password"
+                :error="getFieldError(form.errors, 'password')"
                 id="register-password"
                 v-model="form.password"
                 required
@@ -180,7 +172,7 @@ function submit(): void {
             <AuthField
                 label="Confirm password"
                 type="password"
-                :error="form.errors.password_confirmation"
+                :error="getFieldError(form.errors, 'password_confirmation')"
                 id="register-password-confirmation"
                 v-model="form.password_confirmation"
                 required

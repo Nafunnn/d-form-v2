@@ -2,6 +2,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import { Head, useForm } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
+import { getFieldError, handleInertiaFormErrors, humanizeErrorMessage } from '@/lib/error-message'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import FormBuilderWorkspace from '@/components/modules/builder/FormBuilderWorkspace.vue'
 import {
@@ -67,10 +68,10 @@ const visibleFor = computed({
 })
 
 const fieldErrors = computed(() => ({
-    title: settingsForm.errors.title,
-    description: settingsForm.errors.description,
-    closed_at: settingsForm.errors.closed_at,
-    visible_for: settingsForm.errors.visible_for,
+    title: getFieldError(settingsForm.errors, 'title'),
+    description: getFieldError(settingsForm.errors, 'description'),
+    closed_at: getFieldError(settingsForm.errors, 'closed_at'),
+    visible_for: getFieldError(settingsForm.errors, 'visible_for'),
 }))
 
 function syncFieldsFromProps(): void {
@@ -122,10 +123,9 @@ function onSave(): void {
         }))
         .put(props.updateFormUrl, {
             preserveScroll: true,
-            onSuccess: () => toast.success('Form and fields saved successfully.'),
+            onSuccess: () => toast.success(humanizeErrorMessage('Form and fields saved successfully.')),
             onError: (errors) => {
-                const first = Object.values(errors)[0]
-                toast.error(typeof first === 'string' ? first : 'Failed to save form. Please check your fields.')
+                handleInertiaFormErrors(errors, { title: 'Gagal menyimpan form' })
             },
         })
 }

@@ -8,6 +8,9 @@ import UserAvatarFallback from '@/components/modules/user/UserAvatarFallback.vue
 import { userAvatarSeed } from '@/lib/userAvatarFallback'
 import { Button } from '@/components/ui/button'
 import DashboardSidebar from '@/components/modules/dashboard/DashboardSidebar.vue'
+import { usePageFlashToast } from '@/utils/composables/usePageFlashToast'
+
+usePageFlashToast()
 import {
     DropdownMenu,
     DropdownMenuContent,

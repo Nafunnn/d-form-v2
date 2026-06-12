@@ -8,6 +8,12 @@ import { Spinner } from '@/components/ui/spinner'
 import { index as loginPage } from '@/actions/App/Http/Controllers/Auth/LoginController'
 import { toast } from 'vue-sonner'
 import { routes } from '@/lib/routes'
+import {
+    getFieldError,
+    handleInertiaFormErrors,
+    humanizeErrorMessage,
+    showErrorToast,
+} from '@/lib/error-message'
 
 const PASSWORD_RESET_LINK_URL = routes.auth.passwordResetLink
 
@@ -27,15 +33,18 @@ async function submit(): Promise<void> {
         const { data } = await axios.post<{ message: string }>(PASSWORD_RESET_LINK_URL, {
             email: email.value,
         })
-        toast.success(data.message)
+        toast.success(humanizeErrorMessage(data.message))
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 422) {
             const errors = error.response.data?.errors as Record<string, string[]> | undefined
-            emailError.value = errors?.email?.[0]
+            if (errors) {
+                handleInertiaFormErrors(errors, { title: 'Gagal mengirim tautan reset' })
+                emailError.value = getFieldError(errors, 'email')
+            }
             return
         }
 
-        toast.error('Unable to send reset link. Please try again.')
+        showErrorToast('Unable to send reset link. Please try again.')
     } finally {
         processing.value = false
     }

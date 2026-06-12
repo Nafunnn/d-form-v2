@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
+import { parseApiErrorMessage, showErrorToast, showHttpErrorToast } from '@/lib/error-message'
 import {
     answerPreview,
     formatSubmissionDate,
@@ -192,21 +193,12 @@ export function useFormSubmissionsPage(props: {
                 const body = (await res.json().catch(() => ({}))) as { message?: string }
 
                 if (!res.ok) {
-                    if (res.status === 409) {
-                        toast.error(body.message ?? 'Submission ini sudah pernah direview.')
-                    } else if (res.status === 422) {
-                        toast.error(body.message ?? 'Status review tidak valid.')
-                    } else if (res.status === 403) {
-                        toast.error('Anda tidak punya izin untuk mereview submission ini.')
-                    } else if (res.status === 404) {
-                        toast.error('Submission tidak ditemukan.')
-                    } else if (res.status === 429) {
-                        toast.error(
-                            'Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.',
-                        )
-                    } else {
-                        toast.error(body.message ?? 'Gagal memperbarui status review.')
-                    }
+                    showHttpErrorToast(res.status, body, {
+                        409: parseApiErrorMessage(body, 'Submission ini sudah pernah direview.'),
+                        422: parseApiErrorMessage(body, 'Status review tidak valid.'),
+                        403: 'Anda tidak punya izin untuk mereview submission ini.',
+                        404: 'Submission tidak ditemukan.',
+                    })
                     if (res.status === 409 || res.status === 422) {
                         router.reload({
                             only: props.form.registration_mode === 'bundle' ? ['bundleGroups'] : ['submissions'],
@@ -249,7 +241,7 @@ export function useFormSubmissionsPage(props: {
                     },
                 })
             } catch {
-                toast.error('Tidak dapat menghubungi server. Coba lagi.')
+                showErrorToast('Tidak dapat menghubungi server. Coba lagi.')
             } finally {
                 clearReviewing()
             }

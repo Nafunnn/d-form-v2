@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import ConfirmationModal from '@/components/core/ConfirmationModal.vue'
 import FormFillFieldSlotRows from '@/components/modules/dashboard/FormFillFieldSlotRows.vue'
+import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
 import FormFillParticipantEmailsSection from '@/components/modules/dashboard/FormFillParticipantEmailsSection.vue'
 import { Send } from 'lucide-vue-next'
 import type { FormFillPageContext } from '@/utils/composables/useFormFillPage'
@@ -132,9 +133,12 @@ function confirmSubmit() {
 
                     <div
                         v-else-if="ctx.builderType(field) === 'paragraph'"
-                        class="rounded-2xl border border-border bg-card px-5 py-4 text-sm leading-relaxed text-muted-foreground shadow-xs"
+                        class="rounded-2xl border border-border bg-card px-5 py-4 shadow-xs"
                     >
-                        {{ ctx.metadata(field).content || field.description || field.label }}
+                        <FormParagraphContent
+                            :content="String(ctx.metadata(field).content ?? '')"
+                            :fallback="field.description || field.label"
+                        />
                     </div>
 
                     <hr v-else-if="ctx.builderType(field) === 'divider'" class="app-divider my-2" />
@@ -142,6 +146,18 @@ function confirmSubmit() {
                     <div v-else-if="ctx.builderType(field) === 'banner'" class="hidden" />
 
                     <Card v-else class="overflow-hidden">
+                        <div
+                            v-if="ctx.cardErrorsForFields([field]).length"
+                            class="border-b border-destructive/20 bg-destructive/5 px-5 py-3 sm:px-6"
+                        >
+                            <p
+                                v-for="(message, errIdx) in ctx.cardErrorsForFields([field])"
+                                :key="`linear-err-${field.id}-${errIdx}`"
+                                class="text-xs font-medium text-destructive"
+                            >
+                                {{ message }}
+                            </p>
+                        </div>
                         <template v-for="slot in ctx.participationSlotsForField(field)" :key="`${field.id}-${slot.slotIndex ?? 'lead'}`">
                             <FormFillFieldSlotRows
                                 :ctx="ctx"
@@ -168,6 +184,18 @@ function confirmSubmit() {
                     :key="'bundle-' + (slot.slotIndex ?? 'lead') + '-' + segIdx"
                     class="overflow-hidden"
                 >
+                    <div
+                        v-if="ctx.cardErrorsForBundleSlot(segment.fields, slot.slotIndex).length"
+                        class="border-b border-destructive/20 bg-destructive/5 px-5 py-3 sm:px-6"
+                    >
+                        <p
+                            v-for="(message, errIdx) in ctx.cardErrorsForBundleSlot(segment.fields, slot.slotIndex)"
+                            :key="`bundle-err-${segIdx}-${slot.slotIndex ?? 'lead'}-${errIdx}`"
+                            class="text-xs font-medium text-destructive"
+                        >
+                            {{ message }}
+                        </p>
+                    </div>
                     <div
                         v-if="slot.title"
                         class="border-b border-border bg-muted/20 px-5 py-2 sm:px-6"

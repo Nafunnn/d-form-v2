@@ -1,26 +1,18 @@
 <script setup lang="ts">
-import { useForm, Link, usePage } from '@inertiajs/vue3'
+import { useForm, Link } from '@inertiajs/vue3'
 import { AuthSubmitButton } from '@/components/core/button'
 import { AuthField } from '@/components/core/field'
 import { store as login } from '@/actions/App/Http/Controllers/Auth/LoginController'
 import { index as forgotPasswordPage } from '@/actions/App/Http/Controllers/Auth/ForgotPasswordController'
 import { index as registerPage } from '@/actions/App/Http/Controllers/Auth/RegisterController'
-import { toast } from 'vue-sonner'
-
-const page = usePage()
+import { getFieldError, handleInertiaFormErrors } from '@/lib/error-message'
 
 const form = useForm({ email: '', password: '' }).dontRemember('password')
 
 function submit(): void {
     form.submit(login(), {
-        onFinish: () => {
-            const t = page.flash.toast
-            if (!t) return
-            if (t.type === 'success') {
-                toast.success(t.message)
-            } else {
-                toast.error(t.message)
-            }
+        onError: (errors) => {
+            handleInertiaFormErrors(errors, { title: 'Gagal masuk' })
         },
     })
 }
@@ -44,7 +36,7 @@ function submit(): void {
         <form @submit.prevent="submit" class="space-y-5">
             <AuthField
                 type="email"
-                :error="form.errors.email"
+                :error="getFieldError(form.errors, 'email')"
                 label="Email"
                 id="login-email"
                 v-model="form.email"
@@ -55,7 +47,7 @@ function submit(): void {
             />
             <AuthField
                 type="password"
-                :error="form.errors.password"
+                :error="getFieldError(form.errors, 'password')"
                 label="Password"
                 id="login-password"
                 v-model="form.password"

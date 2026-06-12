@@ -1,6 +1,14 @@
 import { computed, onBeforeUnmount, reactive } from 'vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import { normalizeBannerSrc, pickFormBannerField } from '@/components/modules/builder/formBanner'
+import { isCheckboxOptionSelected, toggleCheckboxSelection } from '@/lib/formCheckboxAnswers'
+import {
+    buildFieldLabelMap,
+    getFieldError,
+    handleInertiaFormErrors,
+    showErrorToast,
+    type ErrorMessageContext,
+} from '@/lib/error-message'
 import { getFormFieldOptionRows } from '@/lib/formFieldOptions'
 import { readFieldMetadata, readFieldRules, readMetaBoolean } from '@/lib/formFieldMetadata'
 import type {
@@ -131,6 +139,11 @@ export function useFormFillPage(props: {
 
     const answerForm = useForm(initialValues as Record<string, unknown>)
 
+    const errorContext = computed<ErrorMessageContext>(() => ({
+        fields,
+        fieldLabels: buildFieldLabelMap(fields),
+    }))
+
     /** Object URLs for local file previews (image upload); revoked on clear/unmount. */
     const filePreviewUrls = reactive<Record<string, string>>({})
 
@@ -244,8 +257,11 @@ export function useFormFillPage(props: {
     }
 
     function onCheckboxToggle(fieldName: string, option: string, checked: boolean) {
-        const current = Array.isArray(answerForm[fieldName]) ? (answerForm[fieldName] as string[]) : []
-        answerForm[fieldName] = checked ? [...current, option] : current.filter((value) => value !== option)
+        answerForm[fieldName] = toggleCheckboxSelection(answerForm[fieldName], option, checked)
+    }
+
+    function isCheckboxSelected(fieldName: string, option: string): boolean {
+        return isCheckboxOptionSelected(answerForm[fieldName], option)
     }
 
     function onFileChange(fieldName: string, event: Event) {
@@ -277,21 +293,51 @@ export function useFormFillPage(props: {
             const emails = (answerForm.team_member_emails as string[] | undefined) ?? []
             const clash = emails.some((e) => (e?.trim().toLowerCase() ?? '') === myEmail)
             if (clash) {
-                answerForm.setError(
-                    'team_member_emails',
-                    'Email anggota tidak boleh sama dengan email akun Anda. Gunakan email peserta lain.',
-                )
+                const message =
+                    'Email anggota tidak boleh sama dengan email akun Anda. Gunakan email peserta lain.'
+                answerForm.setError('team_member_emails', message)
+                showErrorToast(message, { title: 'Email anggota tidak valid' })
                 return
             }
         }
 
         answerForm.post(props.submitUrl, {
             forceFormData: true,
+            onError: (errors) => {
+                handleInertiaFormErrors(errors, {
+                    ...errorContext.value,
+                    title: 'Gagal mengirim pendaftaran',
+                })
+            },
         })
     }
 
     function fieldError(name: string): string | undefined {
-        return (answerForm.errors as Record<string, string>)[name]
+        return getFieldError(answerForm.errors, name, errorContext.value)
+    }
+
+    function fieldKeysForField(field: IFormField): string[] {
+        return participationSlotsForField(field).map((slot) => answerKeyForSlot(field, slot.slotIndex))
+    }
+
+    function cardErrorsForFields(fields: IFormField[]): string[] {
+        const messages = new Set<string>()
+        for (const field of fields) {
+            for (const key of fieldKeysForField(field)) {
+                const message = fieldError(key)
+                if (message) messages.add(message)
+            }
+        }
+        return [...messages]
+    }
+
+    function cardErrorsForBundleSlot(fields: IFormField[], slotIndex: number | null): string[] {
+        const messages = new Set<string>()
+        for (const field of fields) {
+            const message = fieldError(answerKeyForSlot(field, slotIndex))
+            if (message) messages.add(message)
+        }
+        return [...messages]
     }
 
     const memberSlots = computed(() => props.memberSlots)
@@ -322,11 +368,14 @@ export function useFormFillPage(props: {
         fileHint,
         acceptValue,
         onCheckboxToggle,
+        isCheckboxSelected,
         onFileChange,
         clearFileUpload,
         filePreviewUrls,
         submit,
         fieldError,
+        cardErrorsForFields,
+        cardErrorsForBundleSlot,
     }
 }
 

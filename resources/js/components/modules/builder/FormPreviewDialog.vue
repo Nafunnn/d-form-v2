@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
+import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
@@ -195,9 +196,12 @@ function ratingStars(field: FormPreviewField): number[] {
                                     <!-- Paragraph -->
                                     <div
                                         v-else-if="field.type === 'paragraph'"
-                                        class="rounded-2xl border border-border bg-muted/30 px-5 py-4 text-sm leading-relaxed text-muted-foreground shadow-xs"
+                                        class="rounded-2xl border border-border bg-muted/30 px-5 py-4 shadow-xs"
                                     >
-                                        {{ metaString(field, 'content') || field.description || field.label }}
+                                        <FormParagraphContent
+                                            :content="metaString(field, 'content')"
+                                            :fallback="field.description || field.label"
+                                        />
                                     </div>
 
                                     <!-- Divider -->
