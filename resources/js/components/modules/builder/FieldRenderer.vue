@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { optionLabel, optionImageUrl } from '@/components/modules/builder/fieldMapping'
+import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
 import { normalizeBannerSrc } from '@/components/modules/builder/formBanner'
 import type { BuilderField, FieldOptionEntry } from '@/types/form-builder'
 import {
@@ -342,9 +343,10 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
 
                 <!-- Paragraph -->
                 <div v-else-if="field.type === 'paragraph'">
-                    <p class="text-sm leading-relaxed text-muted-foreground">
-                        {{ field.metadata?.content || 'Teks penjelasan untuk pengisi form.' }}
-                    </p>
+                    <FormParagraphContent
+                        :content="String(field.metadata?.content ?? '')"
+                        fallback="Teks penjelasan untuk pengisi form."
+                    />
                 </div>
 
                 <!-- Divider -->

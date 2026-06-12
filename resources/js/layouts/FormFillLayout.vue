@@ -6,8 +6,10 @@ import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-vue-next'
 import { routes } from '@/lib/routes'
+import { usePageFlashToast } from '@/utils/composables/usePageFlashToast'
 
 const page = usePage()
+usePageFlashToast()
 
 const fallbackBackHref = computed((): string => {
     const event = (page.props.event as { id: string; slug?: string; title: string } | undefined)

@@ -8,6 +8,23 @@ export const SIDEBAR_WIDTH_MOBILE = "18rem"
 export const SIDEBAR_WIDTH_ICON = "3rem"
 export const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
+const EDITABLE_SHORTCUT_IGNORE_SELECTOR =
+  'input, textarea, select, [contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"], .ProseMirror, .dform-tiptap-editor'
+
+/** Lewati toggle sidebar bila pengguna sedang mengetik / mengedit (Ctrl+B = bold di editor). */
+export function shouldHandleSidebarKeyboardShortcut(event: KeyboardEvent): boolean {
+  if (event.key.toLowerCase() !== SIDEBAR_KEYBOARD_SHORTCUT) return false
+  if (!event.metaKey && !event.ctrlKey) return false
+  if (event.altKey || event.shiftKey) return false
+
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return true
+
+  if (target.isContentEditable) return false
+
+  return target.closest(EDITABLE_SHORTCUT_IGNORE_SELECTOR) === null
+}
+
 export const [useSidebar, provideSidebarContext] = createContext<{
   state: ComputedRef<"expanded" | "collapsed">
   open: Ref<boolean>

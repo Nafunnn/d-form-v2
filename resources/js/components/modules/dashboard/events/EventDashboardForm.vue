@@ -11,7 +11,7 @@ import TipTapEditor from '@/components/modules/dashboard/events/TipTapEditor.vue
 import EventMultiValuePicker from '@/components/modules/dashboard/events/EventMultiValuePicker.vue'
 import { Upload, X, Save, Send } from 'lucide-vue-next'
 import { store as storeEvent, update as updateEvent } from '@/actions/App/Http/Controllers/Dashboard/Events/EventController'
-import { showEventValidationToast } from '@/lib/eventValidationToast'
+import { getFieldError, handleInertiaFormErrors } from '@/lib/error-message'
 import { eventHeroBannerContainerClass } from '@/lib/eventBannerAspect'
 import {
     formatIntegerId,
@@ -262,8 +262,12 @@ function submitForm(publish: boolean): void {
                 toast.success(props.variant === 'create' ? 'Disimpan sebagai draf.' : 'Perubahan disimpan.')
             }
         },
-        onError: (errors) => showEventValidationToast(errors),
+        onError: (errors) => handleInertiaFormErrors(errors, { title: 'Gagal menyimpan acara' }),
     })
+}
+
+function fieldError(key: string): string | undefined {
+    return getFieldError(form.errors, key)
 }
 </script>
 
@@ -279,14 +283,14 @@ function submitForm(publish: boolean): void {
                     <div class="flex flex-col gap-2">
                         <Label for="title" class="text-sm font-medium">Judul acara</Label>
                         <Input id="title" v-model="form.title" placeholder="Contoh: Bootcamp Web 2026" />
-                        <p v-if="form.errors.title" class="text-destructive text-xs">{{ form.errors.title }}</p>
+                        <p v-if="fieldError('title')" class="text-destructive text-xs">{{ fieldError('title') }}</p>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <Label class="text-sm font-medium">Deskripsi</Label>
                         <TipTapEditor v-model="form.description" />
-                        <p v-if="form.errors.description" class="text-destructive text-xs">
-                            {{ form.errors.description }}
+                        <p v-if="fieldError('description')" class="text-destructive text-xs">
+                            {{ fieldError('description') }}
                         </p>
                     </div>
 
@@ -384,7 +388,7 @@ function submitForm(publish: boolean): void {
                                 {{ bannerFootnote }}
                             </p>
                         </div>
-                        <p v-if="form.errors.banner" class="text-destructive text-xs">{{ form.errors.banner }}</p>
+                        <p v-if="fieldError('banner')" class="text-destructive text-xs">{{ fieldError('banner') }}</p>
                     </div>
 
                     <div class="flex flex-col gap-2">
@@ -394,7 +398,7 @@ function submitForm(publish: boolean): void {
                             v-model="form.location"
                             placeholder="Mis. Online — Zoom, atau Semarang — Auditorium A"
                         />
-                        <p v-if="form.errors.location" class="text-destructive text-xs">{{ form.errors.location }}</p>
+                        <p v-if="fieldError('location')" class="text-destructive text-xs">{{ fieldError('location') }}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -414,15 +418,15 @@ function submitForm(publish: boolean): void {
                             <div class="flex flex-col gap-1.5">
                                 <Label for="start_date" class="text-xs font-medium text-foreground">Mulai acara</Label>
                                 <DatePicker id="start_date" v-model="form.start_date" />
-                                <p v-if="form.errors.start_date" class="text-destructive text-xs">
-                                    {{ form.errors.start_date }}
+                                <p v-if="fieldError('start_date')" class="text-destructive text-xs">
+                                    {{ fieldError('start_date') }}
                                 </p>
                             </div>
                             <div class="flex flex-col gap-1.5">
                                 <Label for="end_date" class="text-xs font-medium text-foreground">Selesai acara</Label>
                                 <DatePicker id="end_date" v-model="form.end_date" />
-                                <p v-if="form.errors.end_date" class="text-destructive text-xs">
-                                    {{ form.errors.end_date }}
+                                <p v-if="fieldError('end_date')" class="text-destructive text-xs">
+                                    {{ fieldError('end_date') }}
                                 </p>
                             </div>
                         </div>
@@ -438,8 +442,8 @@ function submitForm(publish: boolean): void {
                                     Pendaftaran dibuka
                                 </Label>
                                 <DateTimePicker id="registration_start" v-model="form.registration_start" />
-                                <p v-if="form.errors.registration_start" class="text-destructive text-xs">
-                                    {{ form.errors.registration_start }}
+                                <p v-if="fieldError('registration_start')" class="text-destructive text-xs">
+                                    {{ fieldError('registration_start') }}
                                 </p>
                             </div>
                             <div class="flex flex-col gap-1.5">
@@ -447,8 +451,8 @@ function submitForm(publish: boolean): void {
                                     Pendaftaran ditutup
                                 </Label>
                                 <DateTimePicker id="registration_end" v-model="form.registration_end" />
-                                <p v-if="form.errors.registration_end" class="text-destructive text-xs">
-                                    {{ form.errors.registration_end }}
+                                <p v-if="fieldError('registration_end')" class="text-destructive text-xs">
+                                    {{ fieldError('registration_end') }}
                                 </p>
                             </div>
                         </div>
@@ -468,7 +472,7 @@ function submitForm(publish: boolean): void {
                                 @update:model-value="onQuotaInput"
                                 @blur="onQuotaBlur"
                             />
-                            <p v-if="form.errors.quota" class="text-destructive text-xs">{{ form.errors.quota }}</p>
+                            <p v-if="fieldError('quota')" class="text-destructive text-xs">{{ fieldError('quota') }}</p>
                         </div>
                         <div class="flex flex-col gap-1.5">
                             <Label for="price" class="text-xs font-medium">Harga (Rp)</Label>
@@ -483,7 +487,7 @@ function submitForm(publish: boolean): void {
                                 @update:model-value="onPriceInput"
                                 @blur="onPriceBlur"
                             />
-                            <p v-if="form.errors.price" class="text-destructive text-xs">{{ form.errors.price }}</p>
+                            <p v-if="fieldError('price')" class="text-destructive text-xs">{{ fieldError('price') }}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -504,7 +508,7 @@ function submitForm(publish: boolean): void {
                             :options="sessions"
                             label="Sesi / divisi"
                             :description="multiValueFieldHint"
-                            :error="form.errors.session"
+                            :error="fieldError('session')"
                         />
                         <EventMultiValuePicker
                             :id="categoryPickerId"
@@ -512,7 +516,7 @@ function submitForm(publish: boolean): void {
                             :options="categories"
                             label="Kategori"
                             :description="multiValueFieldHint"
-                            :error="form.errors.category"
+                            :error="fieldError('category')"
                         />
                     </div>
                 </CardContent>

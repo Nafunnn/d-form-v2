@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
+import { handleInertiaFormErrors, humanizeErrorMessage } from '@/lib/error-message'
 import DashboardFocusLayout from '@/layouts/DashboardFocusLayout.vue'
 import PageHeader from '@/components/modules/dashboard/PageHeader.vue'
 import EmptyState from '@/components/modules/dashboard/EmptyState.vue'
@@ -35,9 +36,12 @@ function confirmDelete() {
     router.delete(routes.admin.events.forms.destroy(props.event.id, id), {
         preserveScroll: true,
         onSuccess: () => {
-            toast.success('Form deleted.')
+            toast.success(humanizeErrorMessage('Form deleted.'))
             showDeleteModal.value = false
             deleteTarget.value = null
+        },
+        onError: (errors) => {
+            handleInertiaFormErrors(errors, { title: 'Gagal menghapus form' })
         },
     })
 }

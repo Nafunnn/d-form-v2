@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { readFieldMetadata, readFieldRules } from '@/lib/formFieldMetadata'
+import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
+import { isCheckboxOptionSelected, toggleCheckboxSelection } from '@/lib/formCheckboxAnswers'
 import { getFormFieldOptionRows, formFieldBuilderType } from '@/lib/formFieldOptions'
 import { normalizeBannerSrc } from '@/components/modules/builder/formBanner'
 import FormFieldAnswerDisplay from '@/components/modules/dashboard/FormFieldAnswerDisplay.vue'
@@ -17,6 +19,13 @@ import ConfirmationModal from '@/components/core/ConfirmationModal.vue'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CheckCircle2, Users } from 'lucide-vue-next'
 import { routes } from '@/lib/routes'
+import {
+    buildFieldLabelMap,
+    getFieldError,
+    handleInertiaFormErrors,
+    type ErrorMessageContext,
+    type ValidationErrors,
+} from '@/lib/error-message'
 
 defineOptions({ layout: FormFillLayout })
 
@@ -40,6 +49,15 @@ function builderType(field: IFormField): string {
 
 const appendableFields = computed(() => props.fields.filter((f) => f.is_append))
 
+const errorContext = computed<ErrorMessageContext>(() => ({
+    fields: appendableFields.value,
+    fieldLabels: buildFieldLabelMap(appendableFields.value),
+}))
+
+function invitationFieldError(errors: ValidationErrors, key: string): string | undefined {
+    return getFieldError(errors, key, errorContext.value)
+}
+
 function initialFormState(): Record<string, unknown> {
     const o: Record<string, unknown> = {}
     for (const f of appendableFields.value) {
@@ -62,14 +80,21 @@ const declineDialogOpen = ref(false)
 const acceptConfirmOpen = ref(false)
 
 function onCheckboxToggle(fieldName: string, option: string, checked: boolean) {
-    const current = Array.isArray(confirmForm[fieldName]) ? (confirmForm[fieldName] as string[]) : []
-    confirmForm[fieldName] = checked ? [...current, option] : current.filter((x) => x !== option)
+    confirmForm[fieldName] = toggleCheckboxSelection(confirmForm[fieldName], option, checked)
 }
 
 function submitConfirm() {
     confirmForm
         .transform((data) => ({ ...data, invitation_decision: 'accept' as const }))
-        .post(props.confirmUrl, { forceFormData: true })
+        .post(props.confirmUrl, {
+            forceFormData: true,
+            onError: (errors) => {
+                handleInertiaFormErrors(errors, {
+                    ...errorContext.value,
+                    title: 'Gagal mengonfirmasi undangan',
+                })
+            },
+        })
 }
 
 const declineForm = useForm({
@@ -89,6 +114,11 @@ function submitDeclineFromDialog() {
         preserveScroll: true,
         onSuccess: () => {
             declineDialogOpen.value = false
+        },
+        onError: (errors) => {
+            handleInertiaFormErrors(errors, {
+                title: 'Gagal menolak undangan',
+            })
         },
     })
 }
@@ -157,9 +187,12 @@ function submitDeclineFromDialog() {
 
                     <div
                         v-else-if="builderType(field) === 'paragraph'"
-                        class="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground shadow-xs"
+                        class="rounded-2xl border border-border bg-card px-5 py-4 shadow-xs"
                     >
-                        {{ (metadata(field).content as string) || field.description || field.label }}
+                        <FormParagraphContent
+                            :content="String(metadata(field).content ?? '')"
+                            :fallback="field.description || field.label"
+                        />
                     </div>
 
                     <hr v-else-if="builderType(field) === 'divider'" class="app-divider my-1" />
@@ -185,6 +218,14 @@ function submitDeclineFromDialog() {
 
                     <!-- Appendable: editable -->
                     <Card v-else-if="field.is_append" class="overflow-hidden">
+                        <div
+                            v-if="invitationFieldError(confirmForm.errors, field.name)"
+                            class="border-b border-destructive/20 bg-destructive/5 px-5 py-3 sm:px-6"
+                        >
+                            <p class="text-xs font-medium text-destructive">
+                                {{ invitationFieldError(confirmForm.errors, field.name) }}
+                            </p>
+                        </div>
                         <CardHeader class="pb-2 pt-4">
                             <CardTitle class="text-sm font-semibold">
                                 {{ field.label }}
@@ -217,8 +258,8 @@ function submitDeclineFromDialog() {
                                     class="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
                                 >
                                     <Checkbox
-                                        :checked="((confirmForm[field.name] as string[]) ?? []).includes(row.label)"
-                                        @update:checked="(v: boolean | 'indeterminate') => onCheckboxToggle(field.name, row.label, v === true)"
+                                        :model-value="isCheckboxOptionSelected(confirmForm[field.name], row.label)"
+                                        @update:model-value="(v: boolean | 'indeterminate') => onCheckboxToggle(field.name, row.label, v === true)"
                                     />
                                     <img
                                         v-if="row.imageSrc"
@@ -277,7 +318,9 @@ function submitDeclineFromDialog() {
                                     <input type="file" class="w-full text-xs" @change="(e) => (confirmForm[field.name] = (e.target as HTMLInputElement).files?.[0] ?? null)" />
                                 </div>
                             </div>
-                            <p v-if="confirmForm.errors[field.name]" class="text-xs font-medium text-destructive">{{ confirmForm.errors[field.name] }}</p>
+                            <p v-if="invitationFieldError(confirmForm.errors, field.name)" class="text-xs font-medium text-destructive">
+                                {{ invitationFieldError(confirmForm.errors, field.name) }}
+                            </p>
                         </CardContent>
                     </Card>
 
@@ -335,8 +378,8 @@ function submitDeclineFromDialog() {
                         placeholder="e.g. schedule conflict, no longer participating…"
                         class="min-h-24 resize-y"
                     />
-                    <p v-if="declineForm.errors.decline_reason" class="text-xs font-medium text-destructive">
-                        {{ declineForm.errors.decline_reason }}
+                    <p v-if="invitationFieldError(declineForm.errors, 'decline_reason')" class="text-xs font-medium text-destructive">
+                        {{ invitationFieldError(declineForm.errors, 'decline_reason') }}
                     </p>
                 </div>
                 <DialogFooter class="gap-2 sm:gap-0">

@@ -2,6 +2,7 @@
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
+import { getFieldError, handleInertiaFormErrors } from '@/lib/error-message';
 import DashboardLayout from '@/layouts/DashboardLayout.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -261,7 +262,13 @@ function saveAllChanges(): void {
 
     const fail = () => {
         isSavingAll.value = false;
-        toast.error('Gagal menyimpan. Periksa field yang ditandai lalu coba lagi.');
+        const mergedErrors = {
+            ...profileForm.errors,
+            ...passwordForm.errors,
+            ...avatarUploadForm.errors,
+            ...avatarDeleteForm.errors,
+        };
+        handleInertiaFormErrors(mergedErrors, { title: 'Gagal menyimpan profil' });
     };
 
     const next = () => {
@@ -358,8 +365,8 @@ function saveAllChanges(): void {
                                           : 'Mendukung PNG, JPEG, dan GIF di bawah 5MB'
                                 }}
                             </p>
-                            <p v-if="avatarUploadForm.errors.avatar" class="text-destructive mt-2 text-sm">
-                                {{ avatarUploadForm.errors.avatar }}
+                            <p v-if="getFieldError(avatarUploadForm.errors, 'avatar')" class="text-destructive mt-2 text-sm">
+                                {{ getFieldError(avatarUploadForm.errors, 'avatar') }}
                             </p>
                         </div>
                     </div>
@@ -379,8 +386,8 @@ function saveAllChanges(): void {
                                     class="h-12 rounded-xl"
                                     :aria-invalid="Boolean(profileForm.errors.name)"
                                 />
-                                <p v-if="profileForm.errors.name" role="alert" class="text-destructive text-sm">
-                                    {{ profileForm.errors.name }}
+                                <p v-if="getFieldError(profileForm.errors, 'name')" role="alert" class="text-destructive text-sm">
+                                    {{ getFieldError(profileForm.errors, 'name') }}
                                 </p>
                             </div>
                             <div class="grid gap-2">
@@ -394,8 +401,8 @@ function saveAllChanges(): void {
                                     class="h-12 rounded-xl"
                                     :aria-invalid="Boolean(profileForm.errors.email)"
                                 />
-                                <p v-if="profileForm.errors.email" role="alert" class="text-destructive text-sm">
-                                    {{ profileForm.errors.email }}
+                                <p v-if="getFieldError(profileForm.errors, 'email')" role="alert" class="text-destructive text-sm">
+                                    {{ getFieldError(profileForm.errors, 'email') }}
                                 </p>
                             </div>
                         </div>
@@ -443,11 +450,11 @@ function saveAllChanges(): void {
                                     </button>
                                 </div>
                                 <p
-                                    v-if="passwordForm.errors.current_password"
+                                    v-if="getFieldError(passwordForm.errors, 'current_password')"
                                     role="alert"
                                     class="text-destructive text-sm"
                                 >
-                                    {{ passwordForm.errors.current_password }}
+                                    {{ getFieldError(passwordForm.errors, 'current_password') }}
                                 </p>
                             </div>
 
@@ -477,11 +484,11 @@ function saveAllChanges(): void {
                                         </button>
                                     </div>
                                     <p
-                                        v-if="passwordForm.errors.password"
+                                        v-if="getFieldError(passwordForm.errors, 'password')"
                                         role="alert"
                                         class="text-destructive text-sm"
                                     >
-                                        {{ passwordForm.errors.password }}
+                                        {{ getFieldError(passwordForm.errors, 'password') }}
                                     </p>
                                 </div>
 

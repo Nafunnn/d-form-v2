@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { toast } from 'vue-sonner'
+import { handleInertiaFormErrors, humanizeErrorMessage } from '@/lib/error-message'
 import {
     destroy as destroyEvent,
     restore as restoreEvent,
@@ -67,8 +68,8 @@ export function useDashboardEventShowPage(
     function handleDelete() {
         isDeleting.value = true
         router.delete(destroyEvent(event.id).url, {
-            onSuccess: () => toast.success('Event has been archived.'),
-            onError: () => toast.error('Failed to archive event.'),
+            onSuccess: () => toast.success(humanizeErrorMessage('Event has been archived.')),
+            onError: (errors) => handleInertiaFormErrors(errors, { title: 'Gagal mengarsipkan event' }),
             onFinish: () => { isDeleting.value = false; showDeleteModal.value = false },
         })
     }
@@ -76,8 +77,8 @@ export function useDashboardEventShowPage(
     function handleRestore() {
         isRestoring.value = true
         router.post(restoreEvent(event.id).url, {}, {
-            onSuccess: () => toast.success('Event has been restored.'),
-            onError: () => toast.error('Failed to restore event.'),
+            onSuccess: () => toast.success(humanizeErrorMessage('Event has been restored.')),
+            onError: (errors) => handleInertiaFormErrors(errors, { title: 'Gagal memulihkan event' }),
             onFinish: () => { isRestoring.value = false; showRestoreModal.value = false },
         })
     }

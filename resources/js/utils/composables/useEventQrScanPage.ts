@@ -2,6 +2,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import axios from 'axios'
 import { toast } from 'vue-sonner'
 import { Html5Qrcode } from 'html5-qrcode'
+import { humanizeErrorMessage, parseApiErrorMessage, showErrorToast } from '@/lib/error-message'
 import {
     createScanHistoryEntry,
     extractQrCandidate,
@@ -16,20 +17,6 @@ interface AttendanceQueuedJson {
         email: string
         form_answer_id: string
     }
-}
-
-function firstValidationMessage(errors: Record<string, string[]> | undefined): string | null {
-    if (!errors) {
-        return null
-    }
-
-    for (const messages of Object.values(errors)) {
-        if (messages.length > 0) {
-            return messages[0] ?? null
-        }
-    }
-
-    return null
 }
 
 export function useEventQrScanPage(scannerContainerId: string, attendanceScanStoreUrl: string, eventLabel: string) {
@@ -92,7 +79,7 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
                 const body = error.response?.data as { message?: string; errors?: Record<string, string[]> } | undefined
 
                 if (status === 409) {
-                    const msg = body?.message ?? 'Peserta sudah pernah scan untuk event ini.'
+                    const msg = humanizeErrorMessage(body?.message ?? 'Peserta sudah pernah scan untuk event ini.')
                     scanResult.value = {
                         name: 'Sudah terdaftar hadir',
                         email: '-',
@@ -107,10 +94,7 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
                 }
 
                 if (status === 422) {
-                    const msg =
-                        firstValidationMessage(body?.errors)
-                        ?? body?.message
-                        ?? 'Data tidak valid.'
+                    const msg = parseApiErrorMessage(body, 'Data tidak valid.')
                     scanResult.value = {
                         name: 'Tidak dapat diproses',
                         email: '-',
@@ -119,7 +103,7 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
                         rawCode: rawDisplay,
                     }
                     scanHistory.value.unshift(createScanHistoryEntry(scanResult.value))
-                    toast.error(msg)
+                    showErrorToast(msg)
 
                     return
                 }
@@ -133,8 +117,8 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
                 rawCode: rawDisplay,
             }
             scanHistory.value.unshift(createScanHistoryEntry(scanResult.value))
-            toast.error('Permintaan gagal', {
-                description: error instanceof Error ? error.message : 'Coba lagi dalam beberapa saat.',
+            showErrorToast('Permintaan gagal', {
+                description: error instanceof Error ? humanizeErrorMessage(error.message) : 'Coba lagi dalam beberapa saat.',
             })
         }
         finally {
@@ -171,9 +155,14 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
             permissionError.value = ''
         }
         catch (error) {
-            permissionError.value = 'Gagal membaca daftar kamera. Pastikan browser punya izin kamera.'
-            toast.error('Kamera tidak tersedia', {
-                description: error instanceof Error ? error.message : 'Terjadi kesalahan saat mengakses kamera.',
+            permissionError.value = humanizeErrorMessage(
+                'Gagal membaca daftar kamera. Pastikan browser punya izin kamera.',
+            )
+            showErrorToast('Kamera tidak tersedia', {
+                description:
+                    error instanceof Error
+                        ? humanizeErrorMessage(error.message)
+                        : 'Terjadi kesalahan saat mengakses kamera.',
             })
         }
     }
@@ -184,7 +173,7 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
         }
 
         if (!selectedCameraId.value) {
-            toast.error('Pilih kamera terlebih dahulu.')
+            showErrorToast('Pilih kamera terlebih dahulu.')
 
             return
         }
@@ -211,9 +200,14 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
             })
         }
         catch (error) {
-            permissionError.value = 'Izin kamera ditolak atau kamera sedang digunakan aplikasi lain.'
-            toast.error('Tidak bisa memulai kamera', {
-                description: error instanceof Error ? error.message : 'Coba pilih kamera lain atau muat ulang halaman.',
+            permissionError.value = humanizeErrorMessage(
+                'Izin kamera ditolak atau kamera sedang digunakan aplikasi lain.',
+            )
+            showErrorToast('Tidak bisa memulai kamera', {
+                description:
+                    error instanceof Error
+                        ? humanizeErrorMessage(error.message)
+                        : 'Coba pilih kamera lain atau muat ulang halaman.',
             })
         }
         finally {
@@ -262,7 +256,7 @@ export function useEventQrScanPage(scannerContainerId: string, attendanceScanSto
         const code = registrationCodeInput.value.trim()
 
         if (raw.length === 0 && code.length === 0) {
-            toast.error('Tempel isi QR atau isi kode registrasi.')
+            showErrorToast('Tempel isi QR atau isi kode registrasi.')
 
             return
         }

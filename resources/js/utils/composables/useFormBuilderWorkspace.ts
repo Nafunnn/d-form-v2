@@ -1,5 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import { toast } from 'vue-sonner'
+import { showErrorToast } from '@/lib/error-message'
 import { normalizeBannerSrc, type FormBannerState } from '@/components/modules/builder/formBanner'
 import {
     cloneFormBuilderPalette,
@@ -227,7 +228,9 @@ export function useFormBuilderWorkspace(
 
     function requestSave(): void {
         if (validationIssues.value.length > 0) {
-            toast.error(`Missing: ${validationIssues.value.map((i) => i.label).join(', ')}`)
+            showErrorToast(`Field belum lengkap: ${validationIssues.value.map((i) => i.label).join(', ')}`, {
+                title: 'Form belum siap disimpan',
+            })
             mobileTab.value = 'settings'
             inspectorMode.value = 'settings'
             return

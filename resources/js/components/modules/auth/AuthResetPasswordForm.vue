@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { Link, useForm, usePage } from '@inertiajs/vue3'
+import { Link, useForm } from '@inertiajs/vue3'
 import { AuthSubmitButton } from '@/components/core/button'
 import { AuthField } from '@/components/core/field'
 import { index as loginPage } from '@/actions/App/Http/Controllers/Auth/LoginController'
 import { store as resetPassword } from '@/actions/App/Http/Controllers/Auth/ResetPasswordController'
-import { toast } from 'vue-sonner'
+import { getFieldError, handleInertiaFormErrors, showErrorToast } from '@/lib/error-message'
 
 const props = defineProps<{
     token: string
     email: string
 }>()
-
-const page = usePage()
 
 const form = useForm({
     email: props.email,
@@ -21,23 +19,17 @@ const form = useForm({
 
 function submit(): void {
     if (form.password.length < 8) {
-        toast.error('Password must be at least 8 characters.')
+        showErrorToast('Password must be at least 8 characters.')
         return
     }
     if (form.password !== form.password_confirmation) {
-        toast.error('Password does not match.')
+        showErrorToast('Password does not match.')
         return
     }
 
     form.submit(resetPassword(props.token), {
-        onFinish: () => {
-            const t = page.flash.toast
-            if (!t) return
-            if (t.type === 'success') {
-                toast.success(t.message)
-            } else {
-                toast.error(t.message)
-            }
+        onError: (errors) => {
+            handleInertiaFormErrors(errors, { title: 'Gagal mengatur ulang kata sandi' })
         },
     })
 }
@@ -53,7 +45,7 @@ function submit(): void {
         <form @submit.prevent="submit" class="space-y-5">
             <AuthField
                 type="email"
-                :error="form.errors.email"
+                :error="getFieldError(form.errors, 'email')"
                 label="Email"
                 id="reset-email"
                 v-model="form.email"
@@ -64,7 +56,7 @@ function submit(): void {
             />
             <AuthField
                 type="password"
-                :error="form.errors.password"
+                :error="getFieldError(form.errors, 'password')"
                 label="New password"
                 id="reset-password"
                 v-model="form.password"
@@ -75,7 +67,7 @@ function submit(): void {
             />
             <AuthField
                 type="password"
-                :error="form.errors.password_confirmation"
+                :error="getFieldError(form.errors, 'password_confirmation')"
                 label="Confirm new password"
                 id="reset-password-confirmation"
                 v-model="form.password_confirmation"

@@ -3,6 +3,9 @@ import 'vue-sonner/style.css'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import DashboardSidebar from '@/components/modules/dashboard/DashboardSidebar.vue'
+import { usePageFlashToast } from '@/utils/composables/usePageFlashToast'
+
+usePageFlashToast()
 </script>
 
 <template>

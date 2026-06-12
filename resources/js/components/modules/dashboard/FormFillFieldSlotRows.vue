@@ -177,8 +177,8 @@ function fillReady(): boolean {
             >
                 <Checkbox
                     :id="`${storageKey}-${row.label}`"
-                    :checked="((ctx.answerForm[storageKey] as string[]) ?? []).includes(row.label)"
-                    @update:checked="
+                    :model-value="ctx.isCheckboxSelected(storageKey, row.label)"
+                    @update:model-value="
                         (value: boolean | 'indeterminate') =>
                             ctx.onCheckboxToggle(storageKey, row.label, value === true)
                     "
