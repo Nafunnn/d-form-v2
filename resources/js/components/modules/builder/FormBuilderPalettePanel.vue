@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import DraggableItem from '@/components/modules/builder/DraggableItem.vue';
-import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SplitDateTimeField } from '@/components/ui/date-picker';
 import { SimpleSelect, type SimpleSelectOption } from '@/components/ui/simple-select';
-import { ChevronRight, ChevronDown, MessageCircle, Search, Settings2 } from 'lucide-vue-next';
+import { ChevronRight, ChevronDown, Search, Settings2 } from 'lucide-vue-next';
 import type { FormBuilderPaletteCategory } from '@/components/modules/builder/formBuilderPalette';
 import type { FormRegistrationMetadata, FormSiblingOption } from '@/types/form';
 
@@ -19,7 +18,6 @@ const props = withDefaults(
     defineProps<{
         categories: FormBuilderPaletteCategory[];
         openCategoryName: string | null;
-        successEnabled: boolean;
         formSettingsOpen: boolean;
         fieldErrors: Partial<Record<'closed_at' | 'visible_for', string>>;
         visibilityOptions: readonly { value: string; label: string }[];
@@ -32,7 +30,6 @@ const props = withDefaults(
 
 defineEmits<{
     toggleCategory: [cat: FormBuilderPaletteCategory];
-    toggleSuccessEnabled: [];
     toggleFormSettings: [];
     toggleVisibility: [value: string, checked: boolean];
 }>();
@@ -307,28 +304,6 @@ function isCategoryExpanded(name: string): boolean {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="border-border/70 shrink-0 border-t px-3 py-3">
-            <div class="flex w-full items-center gap-3 rounded-xl px-2 py-1.5">
-                <span
-                    class="text-muted-foreground border-border/70 bg-muted/40 grid size-8 shrink-0 place-items-center rounded-lg border transition-colors duration-200"
-                    :class="successEnabled ? 'text-primary border-primary/30 bg-primary/10' : ''"
-                >
-                    <MessageCircle class="size-4" aria-hidden="true" />
-                </span>
-                <span class="min-w-0 flex-1">
-                    <span class="text-foreground block text-xs font-semibold">Pesan setelah submit</span>
-                    <span class="text-muted-foreground mt-0.5 block text-[11px] leading-snug">
-                        {{ successEnabled ? 'Editor tampil di kanvas' : 'Nonaktif — aktifkan untuk menulis' }}
-                    </span>
-                </span>
-                <Switch
-                    :model-value="successEnabled"
-                    aria-label="Aktifkan pesan setelah submit"
-                    @update:model-value="$emit('toggleSuccessEnabled')"
-                />
             </div>
         </div>
     </aside>

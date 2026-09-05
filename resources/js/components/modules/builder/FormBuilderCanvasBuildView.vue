@@ -27,7 +27,6 @@ const PAGE_SIZE = 5;
 const formTitle = defineModel<string>('formTitle', { required: true });
 const formDescription = defineModel<string>('formDescription', { required: true });
 const successContent = defineModel<string>('successContent', { required: true });
-const successEnabled = defineModel<boolean>('successEnabled', { required: true });
 const banner = defineModel<FormBannerState>('banner', { required: true });
 
 const props = defineProps<{
@@ -39,6 +38,7 @@ const props = defineProps<{
     selectedFieldId: string | null;
     dropIndicatorIndex: number;
     dragSourceId: string | null;
+    showSuccessZone: boolean;
 }>();
 
 defineEmits<{
@@ -53,6 +53,7 @@ defineEmits<{
     duplicateField: [id: string];
     moveField: [id: string, dir: -1 | 1];
     openAddSheet: [];
+    remove: [];
 }>();
 
 const currentPage = ref(1);
@@ -431,15 +432,14 @@ const showDropChrome = computed(
                         </div>
                     </div>
                 </section>
-            </section>
 
-            <!-- Pesan setelah submit -->
-            <div class="mt-5">
+                <!-- Zona "Pesan setelah submit": segmen terakhir section utama (ala Google Forms) -->
                 <FormSuccessMessageCard
                     v-model:success-content="successContent"
-                    v-model:success-enabled="successEnabled"
+                    :show="showSuccessZone"
+                    @remove="$emit('remove')"
                 />
-            </div>
+            </section>
 
             <p class="text-muted-foreground/80 mt-5 hidden text-center text-xs leading-relaxed lg:block">
                 Lebar pratinjau mengikuti tampilan form di perangkat seluler. Maks. {{ PAGE_SIZE }} field per halaman.
