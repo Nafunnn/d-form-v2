@@ -124,15 +124,6 @@ async function saveShowSnapshot(): Promise<void> {
     );
 }
 
-const showAutosave = useAutosaveSync(buildShowSnapshot, saveShowSnapshot, {
-    debounceMs: 800,
-    onError: () => toast.error('Gagal menyimpan otomatis. Perubahan tetap ada di kanvas.'),
-});
-
-onUnmounted(() => {
-    void showAutosave.flush();
-});
-
 /** Ref ke FormBuilderWorkspace untuk memicu preview/save dari bar aksi inline (toolbar disembunyikan). */
 const workspaceRef = ref<InstanceType<typeof FormBuilderWorkspace> | null>(null);
 
@@ -219,6 +210,17 @@ watch(
     },
     { deep: true, immediate: true }
 );
+
+// ── Autosave global: di-instantiasi SETELAH watcher hydrate di atas, agar snapshot
+// awal menangkap state yang sudah terisi → tidak ada job save-redundan saat mount. ──
+const showAutosave = useAutosaveSync(buildShowSnapshot, saveShowSnapshot, {
+    debounceMs: 800,
+    onError: () => toast.error('Gagal menyimpan otomatis. Perubahan tetap ada di kanvas.'),
+});
+
+onUnmounted(() => {
+    void showAutosave.flush();
+});
 
 function onSave(): void {
     settingsForm.banner_url = bannerState.bannerUrl;
