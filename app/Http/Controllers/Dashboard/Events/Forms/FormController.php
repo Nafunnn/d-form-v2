@@ -124,7 +124,7 @@ class FormController extends Controller
         return redirect()->route('dashboard.events.forms.show', ['event' => $event, 'form' => $form]);
     }
 
-    public function update(UpdateEventFormRequest $request, Event $event, Form $form): RedirectResponse
+    public function update(UpdateEventFormRequest $request, Event $event, Form $form)
     {
         $this->guardFormOnEvent($event, $form);
         $data = $request->validated();
@@ -172,6 +172,11 @@ class FormController extends Controller
                 }
             }
         });
+
+        // Autosave global (background, tanpa navigasi) → JSON.
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
 
         Inertia::flash('toast', [
             'type' => 'success',
