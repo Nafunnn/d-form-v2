@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from 'vue';
+import { ref, reactive, watch, computed, onUnmounted } from 'vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import { toast } from 'vue-sonner';
+import { useAutosaveSync } from '@/utils/composables/useAutosaveSync';
 import { getFieldError, handleInertiaFormErrors, humanizeErrorMessage } from '@/lib/error-message';
 import DashboardLayout from '@/layouts/DashboardLayout.vue';
 import FormBuilderWorkspace from '@/components/modules/builder/FormBuilderWorkspace.vue';
@@ -81,6 +83,55 @@ const settingsForm = useForm({
 const bannerState = reactive(defaultFormBannerState());
 const formFields = ref<BuilderField[]>([]);
 const formMetadata = ref(emptyFormRegistrationMetadata());
+
+// ── Autosave global: semua mutasi builder (fields + header/settings) ──
+function buildShowSnapshot(): string {
+    return JSON.stringify({
+        fields: formFields.value,
+        title: settingsForm.title,
+        description: settingsForm.description,
+        bannerUrl: bannerState.bannerUrl,
+        bannerCaption: bannerState.caption,
+        success: settingsForm.success_content ?? '',
+        closedAt: settingsForm.closed_at ?? '',
+        visibleFor: settingsForm.visible_for,
+        metadata: formMetadata.value,
+    });
+}
+
+async function saveShowSnapshot(): Promise<void> {
+    const merged = prependFormBannerToBackendPayload(formFields.value, bannerState);
+    const backendFields = toBackendFields(merged);
+    await axios.post(
+        props.saveFieldsUrl,
+        { fields: backendFields },
+        { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } },
+    );
+    await axios.put(
+        props.updateFormUrl,
+        {
+            title: settingsForm.title,
+            description: settingsForm.description,
+            success_content: settingsForm.success_content ?? '',
+            closed_at: settingsForm.closed_at ?? '',
+            visible_for: settingsForm.visible_for,
+            banner_url: bannerState.bannerUrl || null,
+            banner_caption: bannerState.caption || null,
+            fields: backendFields,
+            metadata: toFormMetadataPayload(formMetadata.value),
+        },
+        { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } },
+    );
+}
+
+const showAutosave = useAutosaveSync(buildShowSnapshot, saveShowSnapshot, {
+    debounceMs: 800,
+    onError: () => toast.error('Gagal menyimpan otomatis. Perubahan tetap ada di kanvas.'),
+});
+
+onUnmounted(() => {
+    void showAutosave.flush();
+});
 
 /** Ref ke FormBuilderWorkspace untuk memicu preview/save dari bar aksi inline (toolbar disembunyikan). */
 const workspaceRef = ref<InstanceType<typeof FormBuilderWorkspace> | null>(null);
