@@ -16,6 +16,7 @@ import {
     Heading as HeadingIcon,
     TextCursorInput,
     Minus,
+    MessageSquareCheck,
 } from 'lucide-vue-next'
 
 export interface FormBuilderPaletteField {
@@ -82,6 +83,7 @@ const SOURCE: FormBuilderPaletteCategory[] = [
             { type: 'paragraph', label: 'Paragraph', icon: TextCursorInput, description: 'Descriptive text block' },
             { type: 'divider', label: 'Divider', icon: Minus, description: 'Visual separator line' },
             { type: 'rating', label: 'Star Rating', icon: Star, description: 'Rate with stars' },
+            { type: 'confirmation', label: 'Pesan setelah submit', icon: MessageSquareCheck, description: 'Ucapan setelah peserta mengirim form' },
         ],
     },
 ]

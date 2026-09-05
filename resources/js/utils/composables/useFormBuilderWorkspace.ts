@@ -48,13 +48,13 @@ export function useFormBuilderWorkspace(
     const showMobileEditor = ref<boolean>(false)
     const showPreview = ref<boolean>(false)
 
-    /** Toggle "Pesan setelah submit" — state utama ada di sini agar sinkron kiri ↔ kanvas. */
-    const successEnabled = ref(false)
+    /** Zona "Pesan setelah submit" (ala Google Forms). `true` = canvas menampilkan zona (dipicu drag item palette). */
+    const showSuccessZone = ref(false)
 
-    // Edit form tersimpan: konten sudah ada saat mount → nyalakan toggle.
+    // Edit form tersimpan: konten sudah ada saat mount → tampilkan zona.
     const initialSuccess = models.successContent?.value ?? ''
     if (initialSuccess.replace(/<[^>]*>/g, '').replace(/&nbsp;/gi, ' ').trim() !== '') {
-        successEnabled.value = true
+        showSuccessZone.value = true
     }
 
     const filteredCategories = computed(() => {
@@ -98,7 +98,19 @@ export function useFormBuilderWorkspace(
         Object.assign(models.banner.value, v)
     }
 
+    function hideSuccessZone(): void {
+        showSuccessZone.value = false
+        if (models.successContent) models.successContent.value = ''
+    }
+
     function addField(template: FormBuilderPaletteField, openEditorAfter = false): void {
+        // Item palette "Pesan setelah submit" = trigger zona konfirmasi, bukan BuilderField.
+        if (template.type === 'confirmation') {
+            showSuccessZone.value = true
+            showAddSheet.value = false
+            if (openEditorAfter) showMobileEditor.value = true
+            return
+        }
         const nf = createFormBuilderField(template.type, template.label)
         models.formFields.value = [...models.formFields.value, nf]
         selectedFieldId.value = nf.id
@@ -172,15 +184,6 @@ export function useFormBuilderWorkspace(
         }
     }
 
-    function toggleSuccessEnabled(): void {
-        const next = !successEnabled.value
-        successEnabled.value = next
-        // OFF → kosongkan konten agar payload bersih & preview tak menampilkan pesan basi.
-        if (!next && models.successContent) {
-            models.successContent.value = ''
-        }
-    }
-
     function onGapDragEnter(index: number): void {
         dropIndicatorIndex.value = index
     }
@@ -210,6 +213,14 @@ export function useFormBuilderWorkspace(
         const raw = e.dataTransfer?.getData('application/json')
         if (!raw) return
         const data = JSON.parse(raw) as { isNew?: boolean; type?: string; label?: string; id?: string }
+        // Drop item "Pesan setelah submit" = trigger zona konfirmasi di akhir canvas, bukan BuilderField.
+        if (data.isNew && data.type === 'confirmation') {
+            showSuccessZone.value = true
+            dropIndicatorIndex.value = -1
+            isDraggingOverCanvas.value = false
+            dragSourceId.value = null
+            return
+        }
         const insertAt =
             dropIndicatorIndex.value < 0 ? models.formFields.value.length : dropIndicatorIndex.value
         const list = [...models.formFields.value]
@@ -270,7 +281,7 @@ export function useFormBuilderWorkspace(
         searchQuery,
         filteredCategories,
         openCategoryName,
-        successEnabled,
+        showSuccessZone,
         selectedFieldId,
         selectedField,
         dropIndicatorIndex,
@@ -294,7 +305,7 @@ export function useFormBuilderWorkspace(
         moveField,
         toggleVisibility,
         toggleCategory,
-        toggleSuccessEnabled,
+        hideSuccessZone,
         onGapDragEnter,
         onCanvasDragOver,
         onCanvasDragLeave,

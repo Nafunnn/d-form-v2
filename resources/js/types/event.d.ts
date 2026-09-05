@@ -55,7 +55,7 @@ declare global {
         | 'dropdown' | 'checkbox' | 'radio'
         | 'image_upload' | 'file_upload'
         | 'date' | 'rating'
-        | 'heading' | 'paragraph' | 'divider' | 'banner'
+        | 'heading' | 'paragraph' | 'divider' | 'banner' | 'confirmation'
         | 'url' | 'address' | 'yes_no'
 
     // Simple types stored in the Database
