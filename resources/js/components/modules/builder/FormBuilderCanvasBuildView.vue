@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import FieldRenderer from '@/components/modules/builder/FieldRenderer.vue';
-import LocalLottie from '@/components/core/LocalLottie.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -15,7 +14,6 @@ import {
     ChevronUp,
     ChevronDown,
     PlusCircle,
-    AlignLeft,
 } from 'lucide-vue-next';
 import type { BuilderField } from '@/types/form-builder';
 import FormBuilderBannerBlock from './FormBuilderBannerBlock.vue';
@@ -57,6 +55,29 @@ defineEmits<{
 }>();
 
 const currentPage = ref(1);
+
+/** Maks karakter judul & subtitle (validasi frontend saja — payload tidak diubah) */
+const TITLE_MAX = 200;
+const SUBTITLE_MAX = 500;
+
+const titleLength = computed(() => formTitle.value.length);
+const subtitleLength = computed(() => formDescription.value.length);
+
+function capInput(value: string, max: number): string {
+    return value.length > max ? value.slice(0, max) : value;
+}
+
+function onTitleInput(e: Event): void {
+    const el = e.target as HTMLInputElement;
+    el.value = capInput(el.value, TITLE_MAX);
+    formTitle.value = el.value;
+}
+
+function onSubtitleInput(e: Event): void {
+    const el = e.target as HTMLTextAreaElement;
+    el.value = capInput(el.value, SUBTITLE_MAX);
+    formDescription.value = el.value;
+}
 
 const totalPages = computed(() => {
     if (props.formFields.length === 0) return 1;
@@ -150,31 +171,49 @@ const showDropChrome = computed(
                 <section class="border-border/70 border-b">
                     <div class="space-y-3 px-4 py-4 sm:px-5 sm:py-5">
                         <div class="flex flex-col gap-1.5">
-                            <Label for="f-title" class="text-xs font-medium">
-                                Title <span class="text-destructive">*</span>
-                            </Label>
+                            <div class="flex items-baseline justify-between gap-2">
+                                <Label for="f-title" class="text-xs font-medium">
+                                    Title <span class="text-destructive">*</span>
+                                </Label>
+                                <span
+                                    class="text-muted-foreground/70 text-[10px] font-medium tabular-nums"
+                                    :class="titleLength >= TITLE_MAX ? 'text-destructive/80' : ''"
+                                    >{{ titleLength }}/{{ TITLE_MAX }}</span
+                                >
+                            </div>
                             <div
-                                class="border-border/90 bg-background rounded-lg border px-3.5 py-2.5 shadow-sm sm:px-4 sm:py-3"
+                                class="border-border/90 bg-background rounded-lg border px-3 py-2 shadow-sm sm:px-3.5"
                             >
                                 <input
                                     id="f-title"
-                                    v-model="formTitle"
+                                    :value="formTitle"
+                                    :maxlength="TITLE_MAX"
                                     placeholder="Judul form"
-                                    class="font-display text-foreground placeholder:text-muted-foreground/65 w-full border-0 bg-transparent p-0 text-base leading-snug font-semibold tracking-tight focus:ring-0 focus:outline-none sm:text-lg"
+                                    class="font-display text-foreground placeholder:text-muted-foreground/65 w-full border-0 bg-transparent p-0 text-sm leading-snug font-semibold tracking-tight focus:ring-0 focus:outline-none sm:text-base"
+                                    @input="onTitleInput"
                                 />
                             </div>
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <Label for="f-description" class="text-xs font-medium">Subtitle</Label>
+                            <div class="flex items-baseline justify-between gap-2">
+                                <Label for="f-description" class="text-xs font-medium">Subtitle</Label>
+                                <span
+                                    class="text-muted-foreground/70 text-[10px] font-medium tabular-nums"
+                                    :class="subtitleLength >= SUBTITLE_MAX ? 'text-destructive/80' : ''"
+                                    >{{ subtitleLength }}/{{ SUBTITLE_MAX }}</span
+                                >
+                            </div>
                             <div
-                                class="border-border/90 bg-background rounded-lg border px-3.5 py-2.5 shadow-sm sm:px-4 sm:py-3"
+                                class="border-border/90 bg-background rounded-lg border px-3 py-2 shadow-sm sm:px-3.5"
                             >
                                 <textarea
                                     id="f-description"
-                                    v-model="formDescription"
+                                    :value="formDescription"
+                                    :maxlength="SUBTITLE_MAX"
                                     rows="2"
                                     placeholder="Deskripsi singkat untuk peserta…"
-                                    class="text-muted-foreground placeholder:text-muted-foreground/65 min-h-[3.5rem] w-full resize-none border-0 bg-transparent p-0 text-sm leading-relaxed focus:ring-0 focus:outline-none sm:text-[15px]"
+                                    class="text-muted-foreground placeholder:text-muted-foreground/65 min-h-[2.75rem] w-full resize-none border-0 bg-transparent p-0 text-sm leading-relaxed focus:ring-0 focus:outline-none"
+                                    @input="onSubtitleInput"
                                 ></textarea>
                             </div>
                         </div>
@@ -183,18 +222,52 @@ const showDropChrome = computed(
 
                 <!-- Field form -->
                 <section>
-                    <div class="border-border/70 flex items-center gap-2 border-b px-5 py-3.5 sm:px-7">
-                        <AlignLeft class="text-muted-foreground size-4" aria-hidden="true" />
-                        <h2 class="text-foreground text-sm font-semibold tracking-[-0.01em]">Field form</h2>
-                    </div>
-
-                    <div class="min-h-[400px] px-5 py-7 sm:px-7 sm:py-8">
+                    <div class="px-5 py-7 sm:px-7 sm:py-8">
                         <div
                             v-if="isEmpty && !isDraggingOverCanvas"
-                            class="flex flex-col items-center justify-center py-16 text-center"
+                            class="flex flex-col items-center justify-center py-8 text-center"
                         >
-                            <LocalLottie name="builderEmpty" :height="120" :width="120" class="opacity-80" />
-                            <p class="text-foreground mt-4 text-sm font-semibold">Kanvas masih kosong</p>
+                            <div
+                                class="empty-state-float text-muted-foreground/70 mb-4 grid size-14 place-items-center rounded-2xl border border-dashed border-border bg-muted/40 shadow-sm"
+                                aria-hidden="true"
+                            >
+                                <svg
+                                    width="30"
+                                    height="30"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M6.5 3.5h7l4 4V20a.75.75 0 0 1-.75.75H6.5a.75.75 0 0 1-.75-.75V4.25a.75.75 0 0 1 .75-.75Z"
+                                        fill="currentColor"
+                                        opacity="0.08"
+                                        class="empty-state-doc"
+                                    />
+                                    <path
+                                        d="M13.5 3.75V8a.75.75 0 0 0 .75.75h4M6.5 3.5h7l4 4V20a.75.75 0 0 1-.75.75H6.5a.75.75 0 0 1-.75-.75V4.25a.75.75 0 0 1 .75-.75Z"
+                                        stroke="currentColor"
+                                        stroke-width="1.6"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M9 13h6M9 16.25h4"
+                                        stroke="currentColor"
+                                        stroke-width="1.6"
+                                        stroke-linecap="round"
+                                        opacity="0.75"
+                                    />
+                                    <path
+                                        class="empty-state-plus"
+                                        d="M14.5 7.25v-3M13 5.75h3"
+                                        stroke="currentColor"
+                                        stroke-width="1.4"
+                                        stroke-linecap="round"
+                                    />
+                                </svg>
+                            </div>
+                            <p class="text-foreground text-sm font-semibold">Kanvas masih kosong</p>
                             <p class="text-muted-foreground mt-1 max-w-[260px] text-sm leading-relaxed">
                                 <span class="hidden lg:inline">Tarik komponen dari kiri untuk menambah field.</span>
                                 <span class="lg:hidden">Gunakan tombol di bawah untuk menambah field pertama.</span>
@@ -206,7 +279,7 @@ const showDropChrome = computed(
 
                         <div
                             v-if="isEmpty && isDraggingOverCanvas"
-                            class="border-primary/50 bg-primary/[0.08] text-primary hidden min-h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed transition-all duration-300 lg:flex"
+                            class="border-primary/50 bg-primary/[0.08] text-primary hidden min-h-[140px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed transition-all duration-300 lg:flex"
                         >
                             <div class="bg-primary/15 grid size-12 place-items-center rounded-full">
                                 <PlusCircle class="size-6" />
@@ -222,7 +295,7 @@ const showDropChrome = computed(
                             class="flex min-h-[min(28rem,58vh)] flex-col sm:min-h-[min(30rem,55vh)] lg:min-h-[32rem]"
                         >
                             <div class="min-h-0 flex-1 overflow-x-visible overflow-y-auto pr-0.5">
-                                <TransitionGroup name="fb-field" tag="div" class="flex flex-col gap-6 lg:gap-7">
+                                <TransitionGroup name="fb-field" tag="div" class="flex flex-col gap-3 lg:gap-4">
                                     <div
                                         v-for="(field, localIdx) in paginatedFields"
                                         :key="field.id"
@@ -453,5 +526,39 @@ const showDropChrome = computed(
     transition:
         transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
         opacity 0.28s ease;
+}
+
+/* Empty state: ikon dokumen melayang halus, path "+" berdenyut pelan */
+.empty-state-float {
+    animation: empty-float 3.2s ease-in-out infinite;
+}
+
+@keyframes empty-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+.empty-state-float:hover {
+    animation-play-state: paused;
+}
+
+.empty-state-plus {
+    transform-origin: center;
+    animation: empty-plus-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes empty-plus-pulse {
+    0%,
+    100% {
+        opacity: 0.25;
+    }
+    50% {
+        opacity: 1;
+    }
 }
 </style>
