@@ -431,22 +431,15 @@ const showDropChrome = computed(
                         </div>
                     </div>
                 </section>
-
-                <!-- Pesan setelah submit: blok statis di dalam section utama -->
-                <div
-                    class="grid transition-[grid-template-rows,opacity] duration-250 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                    :class="successEnabled ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
-                >
-                    <div class="min-h-0 overflow-hidden">
-                        <div class="border-border/70 border-t">
-                            <FormSuccessMessageCard
-                                v-model:success-content="successContent"
-                                v-model:success-enabled="successEnabled"
-                            />
-                        </div>
-                    </div>
-                </div>
             </section>
+
+            <!-- Pesan setelah submit -->
+            <div class="mt-5">
+                <FormSuccessMessageCard
+                    v-model:success-content="successContent"
+                    v-model:success-enabled="successEnabled"
+                />
+            </div>
 
             <p class="text-muted-foreground/80 mt-5 hidden text-center text-xs leading-relaxed lg:block">
                 Lebar pratinjau mengikuti tampilan form di perangkat seluler. Maks. {{ PAGE_SIZE }} field per halaman.
