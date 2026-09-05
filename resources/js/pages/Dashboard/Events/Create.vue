@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { handleInertiaFormErrors } from '@/lib/error-message';
+import { toast } from 'vue-sonner';
 import DashboardFocusLayout from '@/layouts/DashboardFocusLayout.vue';
 import EventDashboardForm from '@/components/modules/dashboard/events/EventDashboardForm.vue';
 import EventWizardStepper from '@/components/modules/dashboard/events/EventWizardStepper.vue';
@@ -12,14 +13,16 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 import { setTopbar } from '@/utils/composables/useDashboardTopbar';
 import { destroy as destroyEvent } from '@/actions/App/Http/Controllers/Dashboard/Events/EventController';
+import { update as updateForm } from '@/actions/App/Http/Controllers/Dashboard/Events/Forms/FormController';
 import { __invoke as postFields } from '@/actions/App/Http/Controllers/Dashboard/Events/Forms/FieldOperationController';
+import { useAutosaveSync } from '@/utils/composables/useAutosaveSync';
 import { fromBackendField, toBackendFields, type BackendField } from '@/components/modules/builder/fieldMapping';
 import {
     defaultFormBannerState,
     prependFormBannerToBackendPayload,
     extractFormBannerFromBuilderFields,
 } from '@/components/modules/builder/formBanner';
-import { emptyFormRegistrationMetadata, parseFormRegistrationMetadata } from '@/types/form';
+import { emptyFormRegistrationMetadata, parseFormRegistrationMetadata, toFormMetadataPayload } from '@/types/form';
 import type { BuilderField } from '@/types/form-builder';
 import { routes } from '@/lib/routes';
 
@@ -119,60 +122,71 @@ watch(
     { immediate: true }
 );
 
-// ── Autosave fields (debounce 800ms) ────────────────────────────
-const saveState = ref<'idle' | 'saving' | 'saved'>('idle');
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-let saveSeq = 0;
+// ── Autosave global (optimistik + debounce 800ms): SEMUA mutasi builder ──
+function buildBuilderSnapshot(): string {
+    return JSON.stringify({
+        fields: formFields.value,
+        title: formTitle.value,
+        description: formDescription.value,
+        bannerUrl: bannerState.bannerUrl,
+        bannerCaption: bannerState.caption,
+        success: successContent.value,
+        closedAt: closedAt.value,
+        visibleFor: visibleFor.value,
+        metadata: formMetadata.value,
+    });
+}
 
-function flushFields(): Promise<void> {
+/** Header valid → boleh PUT update; kalau belum lengkap, simpan fields saja (hindari spam 422). */
+function isHeaderComplete(): boolean {
+    return (
+        formTitle.value.trim() !== '' &&
+        formDescription.value.trim() !== '' &&
+        closedAt.value.trim() !== '' &&
+        visibleFor.value.length > 0
+    );
+}
+
+async function saveBuilderSnapshot(): Promise<void> {
     const formId = draftForm.value?.id;
     const eventId = draftEvent.value?.id;
-    if (!formId || !eventId) return Promise.resolve();
-    if (debounceTimer) {
-        clearTimeout(debounceTimer);
-        debounceTimer = null;
-    }
-    const seq = ++saveSeq;
-    saveState.value = 'saving';
+    if (!formId || !eventId) return;
     const merged = prependFormBannerToBackendPayload(formFields.value, bannerState);
     const backend = toBackendFields(merged) as unknown as Record<string, unknown>[];
-
-    return axios
-        .post(
-            postFields({ event: eventId, form: formId }).url,
-            { fields: backend },
-            {
-                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            }
-        )
-        .then(() => {
-            if (seq === saveSeq) saveState.value = 'saved';
-        })
-        .catch(() => {
-            if (seq === saveSeq) saveState.value = 'idle';
-        });
+    await axios.post(
+        postFields({ event: eventId, form: formId }).url,
+        { fields: backend },
+        { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } },
+    );
+    if (!isHeaderComplete()) return;
+    await axios.put(
+        updateForm({ event: eventId, form: formId }).url,
+        {
+            title: formTitle.value,
+            description: formDescription.value,
+            success_content: successContent.value,
+            closed_at: closedAt.value,
+            visible_for: visibleFor.value,
+            banner_url: bannerState.bannerUrl || null,
+            banner_caption: bannerState.caption || null,
+            metadata: toFormMetadataPayload(formMetadata.value),
+        },
+        { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } },
+    );
 }
 
-watch(
-    () => JSON.stringify(formFields.value),
-    () => {
-        if (step.value !== 'forms' || !draftForm.value?.id) return;
-        if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            void flushFields();
-        }, 800);
-    }
-);
+const autosaveEnabled = computed(() => step.value === 'forms' && !!draftForm.value?.id);
+const autosave = useAutosaveSync(buildBuilderSnapshot, saveBuilderSnapshot, {
+    debounceMs: 800,
+    enabled: autosaveEnabled,
+    onError: () => toast.error('Gagal menyimpan otomatis. Perubahan tetap ada di kanvas.'),
+});
+const saveState = autosave.status;
+const flushPending = (): Promise<void> => autosave.flush();
 
-/** Tunggu debounce tertunda selesai (dipakai sebelum navigasi Selesai). */
-function flushPending(): Promise<void> {
-    if (debounceTimer) {
-        clearTimeout(debounceTimer);
-        debounceTimer = null;
-        return flushFields();
-    }
-    return Promise.resolve();
-}
+onUnmounted(() => {
+    void autosave.flush();
+});
 
 // ── Navigasi ────────────────────────────────────────────────────
 function goBackToEvent(): void {
