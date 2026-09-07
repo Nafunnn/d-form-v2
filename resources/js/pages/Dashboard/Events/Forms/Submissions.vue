@@ -73,7 +73,7 @@ function onReview(payload: { action: 'accept' | 'reject'; submission: IFormSubmi
         <div class="mx-auto flex w-full max-w-7xl flex-col gap-6 lg:gap-8">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-2.5">
-                    <div class="bg-primary/10 text-primary grid size-9 place-items-center rounded-xl">
+                    <div class="bg-primary/10 text-primary grid size-9 place-items-center rounded-full">
                         <ListFilter class="size-5" />
                     </div>
                     <div>
@@ -87,7 +87,7 @@ function onReview(payload: { action: 'accept' | 'reject'; submission: IFormSubmi
                     v-if="exportSubmissionsCsvUrl"
                     variant="outline"
                     size="sm"
-                    class="h-9 w-full gap-2 rounded-xl md:w-auto"
+                    class="h-9 w-full gap-2 md:w-auto"
                     as-child
                 >
                     <a :href="exportSubmissionsCsvUrl" class="inline-flex items-center justify-center" download>
@@ -129,7 +129,7 @@ function onReview(payload: { action: 'accept' | 'reject'; submission: IFormSubmi
                 <template v-else>
                     <div class="flex flex-col gap-6">
                         <div class="flex items-center gap-2.5">
-                            <div class="bg-primary/10 text-primary grid size-9 place-items-center rounded-xl">
+                            <div class="bg-primary/10 text-primary grid size-9 place-items-center rounded-full">
                                 <ListFilter class="size-5" />
                             </div>
                             <div>

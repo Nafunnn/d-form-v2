@@ -24,13 +24,18 @@ export interface FormBuilderWorkspaceModels {
     visibleFor: Ref<string[]>
     banner: Ref<FormBannerState>
     formFields: Ref<BuilderField[]>
+    successContent?: Ref<string>
 }
 
+/** Kategori palette terbuka. `null` = semua tertutup (single-expand). */
 export function useFormBuilderWorkspace(
     models: FormBuilderWorkspaceModels,
     options: { onSave: () => void },
 ) {
     const categories = ref<FormBuilderPaletteCategory[]>(cloneFormBuilderPalette())
+
+    /** Single-expand: simpan nama kategori yang terbuka (default semua tertutup). */
+    const openCategoryName = ref<string | null>(null)
 
     const searchQuery = ref<string>('')
     const selectedFieldId = ref<string | null>(null)
@@ -43,9 +48,19 @@ export function useFormBuilderWorkspace(
     const showMobileEditor = ref<boolean>(false)
     const showPreview = ref<boolean>(false)
 
+    /** Zona "Pesan setelah submit" (ala Google Forms). `true` = canvas menampilkan zona (dipicu drag item palette). */
+    const showSuccessZone = ref(false)
+
+    // Edit form tersimpan: konten sudah ada saat mount → tampilkan zona.
+    const initialSuccess = models.successContent?.value ?? ''
+    if (initialSuccess.replace(/<[^>]*>/g, '').replace(/&nbsp;/gi, ' ').trim() !== '') {
+        showSuccessZone.value = true
+    }
+
     const filteredCategories = computed(() => {
         const q = searchQuery.value.toLowerCase().trim()
         if (!q) return categories.value
+        // Mode pencarian: tampilkan semua kategori yang cocok (abaikan single-expand).
         return categories.value
             .map((cat) => ({
                 ...cat,
@@ -83,7 +98,19 @@ export function useFormBuilderWorkspace(
         Object.assign(models.banner.value, v)
     }
 
+    function hideSuccessZone(): void {
+        showSuccessZone.value = false
+        if (models.successContent) models.successContent.value = ''
+    }
+
     function addField(template: FormBuilderPaletteField, openEditorAfter = false): void {
+        // Item palette "Pesan setelah submit" = trigger zona konfirmasi, bukan BuilderField.
+        if (template.type === 'confirmation') {
+            showSuccessZone.value = true
+            showAddSheet.value = false
+            if (openEditorAfter) showMobileEditor.value = true
+            return
+        }
         const nf = createFormBuilderField(template.type, template.label)
         models.formFields.value = [...models.formFields.value, nf]
         selectedFieldId.value = nf.id
@@ -110,6 +137,13 @@ export function useFormBuilderWorkspace(
             inspectorMode.value = 'settings'
             showMobileEditor.value = false
         }
+    }
+
+    /** Buka sheet kelola opsi / pengaturan field dari aksi kartu — jangan toggle-off bila sudah terpilih. */
+    function openFieldManage(id: string): void {
+        selectedFieldId.value = id
+        inspectorMode.value = 'field'
+        showMobileEditor.value = true
     }
 
     function duplicateField(id: string): void {
@@ -150,7 +184,11 @@ export function useFormBuilderWorkspace(
     }
 
     function toggleCategory(cat: FormBuilderPaletteCategory): void {
-        cat.isOpen = !cat.isOpen
+        openCategoryName.value = openCategoryName.value === cat.name ? null : cat.name
+        // Sinkronkan isOpen agar cocok dengan state yang dipakai item kartu.
+        for (const c of categories.value) {
+            c.isOpen = c.name === openCategoryName.value
+        }
     }
 
     function onGapDragEnter(index: number): void {
@@ -182,6 +220,14 @@ export function useFormBuilderWorkspace(
         const raw = e.dataTransfer?.getData('application/json')
         if (!raw) return
         const data = JSON.parse(raw) as { isNew?: boolean; type?: string; label?: string; id?: string }
+        // Drop item "Pesan setelah submit" = trigger zona konfirmasi di akhir canvas, bukan BuilderField.
+        if (data.isNew && data.type === 'confirmation') {
+            showSuccessZone.value = true
+            dropIndicatorIndex.value = -1
+            isDraggingOverCanvas.value = false
+            dragSourceId.value = null
+            return
+        }
         const insertAt =
             dropIndicatorIndex.value < 0 ? models.formFields.value.length : dropIndicatorIndex.value
         const list = [...models.formFields.value]
@@ -241,6 +287,8 @@ export function useFormBuilderWorkspace(
         categories,
         searchQuery,
         filteredCategories,
+        openCategoryName,
+        showSuccessZone,
         selectedFieldId,
         selectedField,
         dropIndicatorIndex,
@@ -258,12 +306,14 @@ export function useFormBuilderWorkspace(
         patchBanner,
         addField,
         selectField,
+        openFieldManage,
         deleteField,
         duplicateField,
         updateField,
         moveField,
         toggleVisibility,
         toggleCategory,
+        hideSuccessZone,
         onGapDragEnter,
         onCanvasDragOver,
         onCanvasDragLeave,

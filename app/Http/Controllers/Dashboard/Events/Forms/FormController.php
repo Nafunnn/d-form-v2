@@ -8,6 +8,7 @@ use App\Http\Requests\StoreEventFormRequest;
 use App\Http\Requests\UpdateEventFormRequest;
 use App\Models\Event;
 use App\Models\Form;
+use App\Models\FormAnswer;
 use App\Models\FormField;
 use App\Support\FormFieldTypeMapping;
 use Illuminate\Http\RedirectResponse;
@@ -92,6 +93,18 @@ class FormController extends Controller
             ->values()
             ->all();
 
+        $submissionQuery = FormAnswer::query()
+            ->with(['user:id,name,email', 'reviewer:id,name,email'])
+            ->where('form_id', $form->id)
+            ->whereListedForOrganizerParticipantRoster()
+            ->orderByDesc('created_at');
+
+        $submissions = (clone $submissionQuery)
+            ->get()
+            ->map(fn (FormAnswer $answer) => $this->submissionToInertia($answer))
+            ->values()
+            ->all();
+
         return Inertia::render('Dashboard/Events/Forms/Show', [
             'event' => $this->eventSummary($event),
             'form' => $this->formToInertia($form),
@@ -99,6 +112,8 @@ class FormController extends Controller
             'siblingForms' => $this->siblingFormsPayload($event, $form->id),
             'saveFieldsUrl' => route('dashboard.events.forms.fields', ['event' => $event, 'form' => $form]),
             'updateFormUrl' => route('dashboard.events.forms.update', ['event' => $event, 'form' => $form]),
+            'submissions' => $submissions,
+            'submissionsCount' => $submissionQuery->count(),
         ]);
     }
 
@@ -109,7 +124,7 @@ class FormController extends Controller
         return redirect()->route('dashboard.events.forms.show', ['event' => $event, 'form' => $form]);
     }
 
-    public function update(UpdateEventFormRequest $request, Event $event, Form $form): RedirectResponse
+    public function update(UpdateEventFormRequest $request, Event $event, Form $form)
     {
         $this->guardFormOnEvent($event, $form);
         $data = $request->validated();
@@ -157,6 +172,11 @@ class FormController extends Controller
                 }
             }
         });
+
+        // Autosave global (background, tanpa navigasi) → JSON.
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
 
         Inertia::flash('toast', [
             'type' => 'success',
@@ -281,6 +301,50 @@ class FormController extends Controller
             'order' => $f->order,
             'metadata' => $meta,
             'is_append' => (bool) $f->is_append,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     id: string,
+     *     user: array{id: string, name: string, email: string}|null,
+     *     answers: array<string, mixed>,
+     *     submitted_at: string,
+     *     review_status: string|null,
+     *     reviewed_at: string|null,
+     *     reviewed_by: string|null,
+     *     reviewer: array{id: string, name: string, email: string}|null,
+     *     registration_role: string|null,
+     *     member_confirmation_status: string|null,
+     *     group_token: string|null,
+     * }
+     */
+    private function submissionToInertia(FormAnswer $answer): array
+    {
+        return [
+            'id' => $answer->id,
+            'user' => $answer->user
+                ? [
+                    'id' => $answer->user->id,
+                    'name' => $answer->user->name,
+                    'email' => $answer->user->email,
+                ]
+                : null,
+            'answers' => $answer->answers,
+            'submitted_at' => $answer->created_at->toISOString(),
+            'review_status' => $answer->review_status?->value,
+            'reviewed_at' => $answer->reviewed_at?->toIso8601String(),
+            'reviewed_by' => $answer->reviewed_by,
+            'reviewer' => $answer->reviewer
+                ? [
+                    'id' => $answer->reviewer->id,
+                    'name' => $answer->reviewer->name,
+                    'email' => $answer->reviewer->email,
+                ]
+                : null,
+            'registration_role' => $answer->registration_role?->value,
+            'member_confirmation_status' => $answer->member_confirmation_status?->value,
+            'group_token' => $answer->group_token,
         ];
     }
 }

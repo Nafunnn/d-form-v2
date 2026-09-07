@@ -244,7 +244,7 @@ const attachmentKindLabel = computed((): string => {
                 <div :class="attachmentToolbarClass">
                     <div class="flex min-w-0 items-center gap-3">
                         <div
-                            class="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-500/[0.12] text-emerald-700 dark:text-emerald-400"
+                            class="grid size-10 shrink-0 place-items-center rounded-full bg-emerald-500/[0.12] text-emerald-700 dark:text-emerald-400"
                             aria-hidden="true"
                         >
                             <FileImage class="size-5" stroke-width="2" />
@@ -262,7 +262,7 @@ const attachmentKindLabel = computed((): string => {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        class="h-9 shrink-0 gap-1.5 rounded-lg px-3 text-[13px] font-medium"
+                        class="h-9 shrink-0 gap-1.5 px-3 text-[13px] font-medium"
                         @click="openLightbox(publicFileUrl)"
                     >
                         <Maximize2 class="size-3.5 opacity-80" aria-hidden="true" />
@@ -288,7 +288,7 @@ const attachmentKindLabel = computed((): string => {
                 <div :class="attachmentToolbarClass">
                     <div class="flex min-w-0 items-center gap-3">
                         <div
-                            class="grid size-10 shrink-0 place-items-center rounded-xl bg-rose-500/[0.11] text-rose-700 dark:text-rose-300"
+                            class="grid size-10 shrink-0 place-items-center rounded-full bg-rose-500/[0.11] text-rose-700 dark:text-rose-300"
                             aria-hidden="true"
                         >
                             <FileText class="size-5" stroke-width="2" />
@@ -307,7 +307,7 @@ const attachmentKindLabel = computed((): string => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            class="h-9 gap-1.5 rounded-lg px-3 text-[13px]"
+                            class="h-9 gap-1.5 px-3 text-[13px]"
                             @click="openFileInNewTab(publicFileUrl)"
                         >
                             <ExternalLink class="size-3.5" aria-hidden="true" />
@@ -317,7 +317,7 @@ const attachmentKindLabel = computed((): string => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            class="h-9 gap-1.5 rounded-lg px-3 text-[13px] text-foreground"
+                            class="h-9 gap-1.5 px-3 text-[13px] text-foreground"
                             @click="downloadStoredFile(publicFileUrl, storedFileLabel)"
                         >
                             <Download class="size-3.5 opacity-80" aria-hidden="true" />
@@ -345,7 +345,7 @@ const attachmentKindLabel = computed((): string => {
                 >
                     <div class="flex min-w-0 flex-1 items-center gap-3">
                         <div
-                            class="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"
+                            class="grid size-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"
                             aria-hidden="true"
                         >
                             <FileText class="size-5" stroke-width="2" />
@@ -364,7 +364,7 @@ const attachmentKindLabel = computed((): string => {
                             type="button"
                             variant="default"
                             size="sm"
-                            class="h-9 flex-1 gap-1.5 rounded-lg px-4 text-[13px] sm:flex-initial"
+                            class="h-9 flex-1 gap-1.5 px-4 text-[13px] sm:flex-initial"
                             @click="openFileInNewTab(publicFileUrl)"
                         >
                             <ExternalLink class="size-3.5" aria-hidden="true" />
@@ -374,7 +374,7 @@ const attachmentKindLabel = computed((): string => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            class="h-9 flex-1 gap-1.5 rounded-lg px-4 text-[13px] sm:flex-initial"
+                            class="h-9 flex-1 gap-1.5 px-4 text-[13px] sm:flex-initial"
                             @click="downloadStoredFile(publicFileUrl, storedFileLabel)"
                         >
                             <Download class="size-3.5" aria-hidden="true" />
@@ -398,7 +398,7 @@ const attachmentKindLabel = computed((): string => {
                     class="size-11 shrink-0 rounded-lg border border-border object-cover"
                     loading="lazy"
                 />
-                <span v-else class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground">
+                <span v-else class="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
                     <ImageIcon class="size-5" aria-hidden="true" />
                 </span>
                 <span class="text-sm font-medium leading-snug text-foreground">{{ row.label }}</span>
@@ -423,11 +423,11 @@ const attachmentKindLabel = computed((): string => {
                         <span class="hidden sm:inline">Pratinjau lampiran · ketuk luar gambar atau tutup</span>
                         <span class="sm:hidden">Pratinjau</span>
                     </p>
-                    <Button
+                    <Button radius="icon"
                         type="button"
                         variant="secondary"
                         size="icon-sm"
-                        class="shrink-0 rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/20"
+                        class="shrink-0 border border-white/15 bg-white/10 text-white hover:bg-white/20"
                         aria-label="Tutup pratinjau"
                         @click="closeLightbox"
                     >

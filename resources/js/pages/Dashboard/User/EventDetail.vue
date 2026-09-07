@@ -166,7 +166,7 @@ const quotaPercent = computed(() => {
                 class="group border-border/70 from-card to-muted/10 hover:border-primary/25 flex min-w-0 gap-3 rounded-2xl border bg-gradient-to-b p-4 shadow-sm transition-[border-color,box-shadow] duration-200 hover:shadow-md"
             >
                 <div
-                    class="bg-primary/10 text-primary ring-primary/15 flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 sm:size-11"
+                    class="bg-primary/10 text-primary ring-primary/15 flex size-10 shrink-0 items-center justify-center rounded-full ring-1 sm:size-11"
                 >
                     <component :is="m.icon" class="size-5" stroke-width="2" />
                 </div>
@@ -213,7 +213,7 @@ const quotaPercent = computed(() => {
                         >
                             <div class="flex min-w-0 gap-3">
                                 <div
-                                    class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl"
+                                    class="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-full"
                                 >
                                     <FileText class="size-4.5" aria-hidden="true" />
                                 </div>
@@ -239,7 +239,7 @@ const quotaPercent = computed(() => {
                                 </div>
                             </div>
                             <div class="flex w-full shrink-0 sm:w-auto">
-                                <Button v-if="form.can_start" as-child class="w-full rounded-xl sm:w-auto">
+                                <Button v-if="form.can_start" as-child class="w-full sm:w-auto">
                                     <Link :href="form.fill_url" :prefetch="false" class="justify-center">
                                         Isi form
                                         <ChevronRight class="ml-1 size-4" />
@@ -249,7 +249,7 @@ const quotaPercent = computed(() => {
                                     v-else
                                     variant="outline"
                                     disabled
-                                    class="w-full rounded-xl sm:w-auto"
+                                    class="w-full sm:w-auto"
                                 >
                                     <Lock class="mr-1.5 size-3.5" aria-hidden="true" />
                                     {{ participantStatusLabel(form.access_status) }}
@@ -309,7 +309,7 @@ const quotaPercent = computed(() => {
                                 Anda diundang sebagai anggota tim atau paket pendaftaran. Belum tercatat sebagai peserta
                                 hingga Anda menyetujui undangan di tautan berikut.
                             </p>
-                            <Button class="h-11 w-full rounded-xl text-[15px] font-semibold shadow-sm" as-child>
+                            <Button class="h-11 w-full text-[15px] font-semibold shadow-sm" as-child>
                                 <Link :href="pendingTeamInvitationUrl">
                                     <MailOpen class="mr-2 size-4" aria-hidden="true" />
                                     Lihat undangan
@@ -317,7 +317,7 @@ const quotaPercent = computed(() => {
                             </Button>
                         </div>
                         <div v-else-if="!isRegistered && event.registration_status === 'open'">
-                            <Button class="h-11 w-full rounded-xl text-[15px] font-semibold shadow-sm" as-child>
+                            <Button class="h-11 w-full text-[15px] font-semibold shadow-sm" as-child>
                                 <Link :href="routes.member.event.register(event.slug)">
                                     <Send class="mr-2 size-4" aria-hidden="true" />
                                     Daftar untuk acara ini
@@ -331,7 +331,7 @@ const quotaPercent = computed(() => {
                             Pendaftaran belum dibuka atau sudah berakhir.
                         </div>
                         <div v-else class="flex flex-col gap-4">
-                            <Button class="w-full rounded-xl" variant="secondary" as-child>
+                            <Button class="w-full" variant="secondary" as-child>
                                 <Link :href="routes.member.event.registration(event.slug)"
                                     >Detail pendaftaran</Link
                                 >

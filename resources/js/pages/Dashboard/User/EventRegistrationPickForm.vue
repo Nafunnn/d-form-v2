@@ -86,7 +86,7 @@ function statusLabel(s: FormAccessStatus): string {
                         <div class="flex w-full flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                             <div class="flex min-w-0 flex-1 gap-3">
                                 <div
-                                    class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/80 text-primary"
+                                    class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted/80 text-primary"
                                 >
                                     <FileText class="size-5" aria-hidden="true" />
                                 </div>
@@ -103,7 +103,7 @@ function statusLabel(s: FormAccessStatus): string {
                                 </div>
                             </div>
                             <div class="flex w-full shrink-0 sm:w-auto sm:justify-end">
-                                <Button v-if="form.can_start" as-child class="w-full rounded-xl sm:w-auto">
+                                <Button v-if="form.can_start" as-child class="w-full sm:w-auto">
                                     <Link :href="form.fill_url" :prefetch="false" class="justify-center">
                                         Isi formulir
                                         <ChevronRight class="ml-1 size-4" />
@@ -113,7 +113,7 @@ function statusLabel(s: FormAccessStatus): string {
                                     v-else-if="form.access_status === 'already_submitted'"
                                     variant="secondary"
                                     as-child
-                                    class="w-full rounded-xl sm:w-auto"
+                                    class="w-full sm:w-auto"
                                 >
                                     <Link :href="routes.member.event.registration(event.slug)" class="justify-center">
                                         Lihat pendaftaran

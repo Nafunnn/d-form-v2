@@ -14,10 +14,12 @@ const props = withDefaults(
         modelValue: string
         placeholder?: string
         disabled?: boolean
+        /** True saat field punya error validasi: border/ring destructive (lewat trigger outline). */
+        ariaInvalid?: boolean
         /** Trigger + calendar width */
         class?: string
     }>(),
-    { placeholder: 'Pilih tanggal', disabled: false },
+    { placeholder: 'Pilih tanggal', disabled: false, ariaInvalid: false },
 )
 
 const emit = defineEmits<{
@@ -52,13 +54,14 @@ const label = (): string => formatIdDateLabel(props.modelValue)
                 type="button"
                 variant="outline"
                 :disabled="disabled"
+                :aria-invalid="ariaInvalid === true ? true : undefined"
                 :class="
-                    cn(
-                        'h-9 w-full justify-start gap-2 rounded-full px-3 text-left text-xs font-normal shadow-none',
-                        !modelValue && 'text-muted-foreground',
-                        props.class,
-                    )
-                "
+ cn(
+ 'h-9 w-full justify-start gap-2 px-3 text-left text-xs font-normal shadow-none',
+ !modelValue && 'text-muted-foreground',
+ props.class,
+ )
+ "
             >
                 <CalendarIcon class="size-4 shrink-0 opacity-60" aria-hidden="true" />
                 <span class="truncate">{{ label() || placeholder }}</span>

@@ -213,6 +213,30 @@ class FormControllerM3ComplianceTest extends TestCase
         $this->assertSame(12, $form->metadata['max_team_size'] ?? null);
     }
 
+    public function test_update_returns_json_for_autosave_when_expects_json(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        $event = Event::factory()->create();
+        $form = Form::factory()->create(['event_id' => $event->id]);
+
+        $this->actingAs($admin)
+            ->putJson($this->updateUri($event, $form), [
+                'title' => $form->title,
+                'description' => $form->description,
+                'closed_at' => $form->closed_at->format('Y-m-d H:i:s'),
+                'visible_for' => $form->visible_for->map(fn ($e) => $e->value)->values()->all(),
+                'banner_url' => $form->banner_url,
+                'banner_caption' => $form->banner_caption,
+                'metadata' => [
+                    'purpose' => 'registration',
+                    'registration_mode' => 'single',
+                ],
+            ])
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+    }
+
     public function test_store_rejects_team_mode_on_other_purpose_form(): void
     {
         $admin = User::factory()->create();

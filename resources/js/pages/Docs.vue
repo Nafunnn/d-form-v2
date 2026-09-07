@@ -154,7 +154,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
                 <!-- Mobile nav toggle -->
                 <button
-                    class="fixed bottom-6 right-6 z-50 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm lg:hidden"
+                    class="fixed bottom-6 right-6 z-50 flex size-12 items-center justify-center bg-primary text-primary-foreground shadow-sm lg:hidden"
                     @click="mobileNavOpen = !mobileNavOpen"
                 >
                     <Menu v-if="!mobileNavOpen" class="size-5" />
@@ -164,9 +164,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                 <!-- Sidebar -->
                 <aside
                     :class="[
-                        'fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-border/30 bg-background px-6 pt-24 pb-10 transition-transform duration-300 lg:sticky lg:top-24 lg:z-auto lg:h-[calc(100vh-6rem)] lg:w-56 lg:shrink-0 lg:translate-x-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0',
-                        mobileNavOpen ? 'translate-x-0' : '-translate-x-full',
-                    ]"
+ 'fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto border-r border-border/30 bg-background px-6 pt-24 pb-10 transition-transform duration-300 lg:sticky lg:top-24 lg:z-auto lg:h-[calc(100vh-6rem)] lg:w-56 lg:shrink-0 lg:translate-x-0 lg:border-0 lg:bg-transparent lg:px-0 lg:pt-0',
+ mobileNavOpen ? 'translate-x-0' : '-translate-x-full',
+ ]"
                 >
                     <nav class="flex flex-col gap-6">
                         <div v-for="group in navSections" :key="group.group">
@@ -175,11 +175,11 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                                 <li v-for="item in group.items" :key="item.id">
                                     <button
                                         :class="[
-                                            'flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[13px] font-medium transition-colors',
-                                            activeSection === item.id
-                                                ? 'bg-primary/10 text-primary'
-                                                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-                                        ]"
+ 'flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] font-medium transition-colors',
+ activeSection === item.id
+ ? 'bg-primary/10 text-primary'
+ : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+ ]"
                                         @click="scrollToSection(item.id)"
                                     >
                                         {{ item.label }}
@@ -438,7 +438,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                                 Profil Pengguna
                             </h2>
                             <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
-                                Di halaman profil (<code>/dashboard/profile</code>), Anda bisa:
+                                Di halaman profil (<code>/profile</code>), Anda bisa:
                             </p>
                             <ul class="mt-3 space-y-1.5 text-sm text-muted-foreground">
                                 <li class="flex gap-2"><ChevronRight class="mt-0.5 size-4 shrink-0 text-primary" /> Mengunggah atau menghapus foto profil (avatar)</li>
@@ -486,7 +486,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                                 <div>
                                     <h4 class="text-sm font-semibold text-foreground">Membuat Acara</h4>
                                     <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                        Navigasi ke <code>/admin/dashboard/events/create</code>. Field yang wajib diisi:
+                                        Navigasi ke <code>/admin/events/create</code>. Field yang wajib diisi:
                                         judul, deskripsi, tanggal mulai dan selesai, lokasi, kuota peserta, dan banner.
                                         Slug URL otomatis digenerate dari judul. Anda bisa memilih untuk mempublikasikan acara langsung atau menyimpan sebagai draft.
                                     </p>
@@ -728,7 +728,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                                 <div>
                                     <h4 class="text-sm font-semibold text-foreground">Untuk Penyelenggara</h4>
                                     <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                        Buka halaman Scan (<code>/admin/dashboard/events/{event}/scan</code>). Arahkan kamera ke QR peserta, atau masukkan kode registrasi secara manual. Sistem akan memverifikasi dan mencatat kehadiran. Setiap peserta hanya bisa di-scan sekali per acara.
+                                        Buka halaman Scan (<code>/admin/events/{event}/scan</code>). Arahkan kamera ke QR peserta, atau masukkan kode registrasi secara manual. Sistem akan memverifikasi dan mencatat kehadiran. Setiap peserta hanya bisa di-scan sekali per acara.
                                     </p>
                                 </div>
                             </div>
@@ -776,7 +776,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
                                 Laporan Acara
                             </h2>
                             <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
-                                Halaman Laporan (<code>/admin/dashboard/events/{event}/laporan</code>) menyediakan ringkasan komprehensif per acara:
+                                Halaman Laporan (<code>/admin/events/{event}/laporan</code>) menyediakan ringkasan komprehensif per acara:
                             </p>
                             <ul class="mt-3 space-y-1.5 text-sm text-muted-foreground">
                                 <li class="flex gap-2"><ChevronRight class="mt-0.5 size-4 shrink-0 text-primary" /> KPI ringkasan (total pendaftar, accepted, attendance rate)</li>
@@ -1055,7 +1055,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         <!-- Scroll to top -->
         <button
             v-if="showScrollTop"
-            class="fixed bottom-6 right-20 z-40 flex size-10 items-center justify-center rounded-full border border-border/50 bg-card text-muted-foreground shadow-sm transition-all hover:text-primary lg:right-6"
+            class="fixed bottom-6 right-20 z-40 flex size-10 items-center justify-center border border-border/50 bg-card text-muted-foreground shadow-sm transition-all hover:text-primary lg:right-6"
             @click="scrollToTop"
         >
             <ArrowUp class="size-4" />

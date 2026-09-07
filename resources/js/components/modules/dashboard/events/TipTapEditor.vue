@@ -337,18 +337,18 @@ const toolbarGroups: ToolbarTool[][] = [
                 <div
                     class="flex flex-wrap items-center gap-0.5 rounded-xl bg-background/75 p-0.5 ring-1 ring-border/55 shadow-inner backdrop-blur-sm"
                 >
-                    <Button
+                    <Button radius="icon"
                         v-for="(tool, tIdx) in group"
                         :key="tIdx"
                         type="button"
                         variant="ghost"
                         size="icon"
                         :title="tool.title"
-                        class="size-8 rounded-lg text-muted-foreground transition-[color,background-color,box-shadow] duration-150 hover:bg-muted/90 hover:text-foreground"
+                        class="size-8 text-muted-foreground transition-[color,background-color,box-shadow] duration-150 hover:bg-muted/90 hover:text-foreground"
                         :class="{
-                            'bg-primary !text-primary-foreground shadow-md ring-1 ring-primary/30 hover:bg-primary hover:!text-primary-foreground':
-                                tool.active(),
-                        }"
+ 'bg-primary !text-primary-foreground shadow-md ring-1 ring-primary/30 hover:bg-primary hover:!text-primary-foreground':
+ tool.active(),
+ }"
                         @click="tool.action()"
                     >
                         <component :is="tool.icon" class="size-3.5" stroke-width="2" />

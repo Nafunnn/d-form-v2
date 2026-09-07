@@ -127,9 +127,9 @@ const highlights: string[] = [
                 <div class="rounded-[2rem] bg-muted/40 p-1.5 ring-1 ring-border/70 sm:p-2 lg:rounded-[2.25rem]">
                     <article
                         :class="[
-                            'overflow-hidden rounded-[calc(2rem-0.375rem)] border border-border/70 bg-card shadow-sm transition-all duration-700 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(23rem,0.85fr)] lg:rounded-[calc(2.25rem-0.5rem)]',
-                            visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
-                        ]"
+ 'overflow-hidden rounded-[calc(2rem-0.375rem)] border border-border/70 bg-card shadow-sm transition-all duration-700 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(23rem,0.85fr)] lg:rounded-[calc(2.25rem-0.5rem)]',
+ visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
+ ]"
                     >
                         <div :class="eventHeroBannerContainerClass('lg:aspect-auto lg:h-full lg:min-h-0')">
                             <img :src="event.banner_url ?? ''" :alt="event.title" class="h-full w-full object-cover" />
@@ -158,9 +158,9 @@ const highlights: string[] = [
                                     </span>
                                     <span
                                         :class="[
-                                            'rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]',
-                                            registrationTone,
-                                        ]"
+ 'rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em]',
+ registrationTone,
+ ]"
                                     >
                                         {{ registrationBadgeLabel }}
                                     </span>
@@ -168,9 +168,9 @@ const highlights: string[] = [
 
                                 <span
                                     :class="[
-                                        'mb-3 inline-flex w-fit rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] lg:hidden',
-                                        registrationTone,
-                                    ]"
+ 'mb-3 inline-flex w-fit rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] lg:hidden',
+ registrationTone,
+ ]"
                                 >
                                     {{ registrationBadgeLabel }}
                                 </span>
@@ -184,7 +184,7 @@ const highlights: string[] = [
 
                             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                                 <div class="flex items-start gap-3 rounded-2xl border border-border/70 bg-muted/20 p-3.5">
-                                    <div class="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                                    <div class="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                                         <CalendarDays class="size-4" />
                                     </div>
                                     <div class="min-w-0">
@@ -197,7 +197,7 @@ const highlights: string[] = [
                                 </div>
 
                                 <div class="flex items-start gap-3 rounded-2xl border border-border/70 bg-muted/20 p-3.5">
-                                    <div class="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                                    <div class="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
                                         <MapPin class="size-4" />
                                     </div>
                                     <div class="min-w-0">
@@ -242,9 +242,9 @@ const highlights: string[] = [
                 <div class="mt-8 grid gap-6 pb-14 sm:gap-8 sm:pb-20 lg:grid-cols-3 lg:gap-10">
                     <div
                         :class="[
-                            'order-2 transition-all duration-700 lg:order-1 lg:col-span-2',
-                            visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
-                        ]"
+ 'order-2 transition-all duration-700 lg:order-1 lg:col-span-2',
+ visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
+ ]"
                         style="transition-delay: 200ms"
                     >
                         <div class="rounded-[1.5rem] border border-border bg-card p-5 shadow-sm sm:p-7">
@@ -264,7 +264,7 @@ const highlights: string[] = [
                                     :key="item"
                                     class="border-border bg-muted/15 hover:border-primary/30 flex items-center gap-3 rounded-2xl border p-4 transition-colors duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]"
                                 >
-                                    <div class="bg-success/10 grid size-7 place-items-center rounded-lg">
+                                    <div class="bg-success/10 grid size-7 place-items-center rounded-full">
                                         <Check class="text-success size-3.5" />
                                     </div>
                                     <span class="text-foreground text-sm font-medium">{{ item }}</span>
@@ -275,13 +275,13 @@ const highlights: string[] = [
 
                     <div
                         :class="[
-                            'hidden transition-all duration-700 lg:order-2 lg:block',
-                            visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
-                        ]"
+ 'hidden transition-all duration-700 lg:order-2 lg:block',
+ visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
+ ]"
                         style="transition-delay: 300ms"
                     >
                         <div class="flex flex-col gap-6 lg:sticky lg:top-28">
-                            <div class="app-surface hidden p-6 lg:block">
+                            <div class="app-surface hidden rounded-2xl p-6 lg:block">
                                 <h3 class="font-display text-foreground mb-4 text-[1.2rem] font-bold leading-tight tracking-tight">
                                     Registration
                                 </h3>
@@ -309,13 +309,13 @@ const highlights: string[] = [
                                 </Link>
                             </div>
 
-                            <div class="app-surface p-6">
+                            <div class="app-surface rounded-2xl p-6">
                                 <h3 class="font-display text-foreground mb-5 text-[1.2rem] font-bold leading-tight tracking-tight">
                                     Event Details
                                 </h3>
                                 <div class="flex flex-col gap-4">
                                     <div class="flex items-start gap-3">
-                                        <div class="bg-muted/40 grid size-8 shrink-0 place-items-center rounded-lg">
+                                        <div class="bg-muted/40 grid size-8 shrink-0 place-items-center rounded-full">
                                             <CalendarDays class="text-muted-foreground size-4" />
                                         </div>
                                         <div class="min-w-0">
@@ -337,7 +337,7 @@ const highlights: string[] = [
                                         </div>
                                     </div>
                                     <div class="flex items-start gap-3">
-                                        <div class="bg-muted/40 grid size-8 shrink-0 place-items-center rounded-lg">
+                                        <div class="bg-muted/40 grid size-8 shrink-0 place-items-center rounded-full">
                                             <MapPin class="text-muted-foreground size-4" />
                                         </div>
                                         <div class="min-w-0">
@@ -350,7 +350,7 @@ const highlights: string[] = [
                                         </div>
                                     </div>
                                     <div class="flex items-start gap-3">
-                                        <div class="bg-muted/40 grid size-8 shrink-0 place-items-center rounded-lg">
+                                        <div class="bg-muted/40 grid size-8 shrink-0 place-items-center rounded-full">
                                             <Shield class="text-muted-foreground size-4" />
                                         </div>
                                         <div class="min-w-0">

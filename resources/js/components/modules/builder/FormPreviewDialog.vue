@@ -11,7 +11,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SimpleSelect, type SimpleSelectOption } from '@/components/ui/simple-select'
 
 /** Mirrors canvas builder field shape used by Show/Create with unknown metadata values. */
 export interface FormPreviewField {
@@ -89,6 +89,13 @@ function optionEntries(field: FormPreviewField): FieldOptionEntry[] {
     })
 }
 
+function dropdownOptions(field: FormPreviewField): SimpleSelectOption[] {
+    return optionEntries(field).map((opt, oi) => ({
+        value: String(opt.id || `option-${oi}`),
+        label: optionLabel(opt),
+    }))
+}
+
 function choiceThumb(url: string): string {
     return normalizeBannerSrc(url)
 }
@@ -131,10 +138,10 @@ function ratingStars(field: FormPreviewField): number[] {
                             </p>
                            
                         </div>
-                        <Button
+                        <Button radius="icon"
                             variant="ghost"
                             size="icon"
-                            class="size-9 shrink-0 rounded-xl border border-transparent hover:border-border hover:bg-muted/60"
+                            class="size-9 shrink-0 border border-transparent hover:border-border hover:bg-muted/60"
                             type="button"
                             aria-label="Close preview"
                             @click="emit('close')"
@@ -167,7 +174,7 @@ function ratingStars(field: FormPreviewField): number[] {
 
                             <PageHeader :title="titleText" :subtitle="description || undefined" />
 
-                            <div v-if="fieldsSafe.length === 0" class="app-surface-soft py-12 text-center" :class="hasFormDescription ? 'mt-6' : 'mt-3'">
+                            <div v-if="fieldsSafe.length === 0" class="app-surface-soft rounded-2xl py-12 text-center" :class="hasFormDescription ? 'mt-6' : 'mt-3'">
                                 <p class="text-sm font-semibold text-foreground">No questions yet</p>
                                 <p class="mt-1.5 max-w-sm mx-auto text-xs leading-relaxed text-muted-foreground">
                                     Add fields from the canvas — they’ll show up here exactly as respondents will see them.
@@ -246,20 +253,14 @@ function ratingStars(field: FormPreviewField): number[] {
                                             />
 
                                             <div v-else-if="field.type === 'dropdown'" class="space-y-2">
-                                                <Select :model-value="undefined">
-                                                    <SelectTrigger class="text-sm opacity-90">
-                                                        <SelectValue placeholder="Choose an option" />
-                                                    </SelectTrigger>
-                                                    <SelectContent class="z-[200]">
-                                                        <SelectItem
-                                                            v-for="(opt, oi) in optionEntries(field)"
-                                                            :key="optKey(opt, oi)"
-                                                            :value="String(opt.id || `option-${oi}`)"
-                                                        >
-                                                            <span class="min-h-[1em] py-0.5">{{ optionLabel(opt) }}</span>
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                <SimpleSelect
+                                                    model-value=""
+                                                    :options="dropdownOptions(field)"
+                                                    placeholder="Choose an option"
+                                                    disabled
+                                                    class="border-border/80 bg-background/80 h-10 w-full text-xs sm:text-sm disabled:opacity-90"
+                                                    aria-label="Choose an option"
+                                                />
                                                 <div class="space-y-1.5 rounded-xl border border-border/70 bg-muted/20 p-2">
                                                     <div
                                                         v-for="(opt, oi) in optionEntries(field)"
@@ -331,16 +332,16 @@ function ratingStars(field: FormPreviewField): number[] {
                                                         v-for="star in ratingStars(field)"
                                                         :key="`${field.id}_${star}`"
                                                         type="button"
-                                                        class="rounded-lg p-1 transition"
+                                                        class=" p-1 transition"
                                                         @click.stop="ratingSelection[field.id] = star"
                                                     >
                                                         <Star
                                                             class="size-7"
                                                             :class="
-                                                                (ratingSelection[field.id] ?? 0) >= star
-                                                                    ? 'fill-amber-400 text-amber-400'
-                                                                    : 'text-muted-foreground/40'
-                                                            "
+ (ratingSelection[field.id] ?? 0) >= star
+ ? 'fill-amber-400 text-amber-400'
+ : 'text-muted-foreground/40'
+ "
                                                         />
                                                     </button>
                                                 </div>
@@ -405,7 +406,7 @@ function ratingStars(field: FormPreviewField): number[] {
                             </p>
                             <Button
                                 type="button"
-                                class="shrink-0 rounded-xl border border-border shadow-xs"
+                                class="shrink-0 border border-border shadow-xs"
                                 @click="emit('close')"
                             >
                                 Done

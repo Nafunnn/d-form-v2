@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import FormPreviewDialog from '@/components/modules/builder/FormPreviewDialog.vue';
 import { Button } from '@/components/ui/button';
 import type { FormBannerState } from '@/components/modules/builder/formBanner';
@@ -11,14 +11,11 @@ import FormBuilderToolbar from './FormBuilderToolbar.vue';
 import FormBuilderMobileTabBar from './FormBuilderMobileTabBar.vue';
 import FormBuilderPalettePanel from './FormBuilderPalettePanel.vue';
 import FormBuilderCanvasBuildView from './FormBuilderCanvasBuildView.vue';
-import FormBuilderValidationSummary from './FormBuilderValidationSummary.vue';
-import FormBuilderFormDetailsCard from './FormBuilderFormDetailsCard.vue';
-import FormBuilderBannerBlock from './FormBuilderBannerBlock.vue';
-import FormBuilderInspectorPanel from './FormBuilderInspectorPanel.vue';
 import FormBuilderAddFieldSheet from './FormBuilderAddFieldSheet.vue';
 import FormBuilderEditFieldSheet from './FormBuilderEditFieldSheet.vue';
 import FormBuilderMobileAddFab from './FormBuilderMobileAddFab.vue';
 import { routes } from '@/lib/routes';
+import FormSettingsPanel from './FormSettingsPanel.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -29,6 +26,8 @@ const props = withDefaults(
         fieldErrors?: Partial<Record<'title' | 'description' | 'closed_at' | 'visible_for', string>>;
         shell?: 'dashboard' | 'fullscreen';
         siblingForms?: FormSiblingOption[];
+        hideToolbarTitles?: boolean;
+        hideToolbar?: boolean;
     }>(),
     {
         saveLabel: 'Save Form',
@@ -36,6 +35,8 @@ const props = withDefaults(
         fieldErrors: () => ({}),
         shell: 'dashboard',
         siblingForms: () => [],
+        hideToolbarTitles: false,
+        hideToolbar: false,
     }
 );
 
@@ -61,14 +62,28 @@ const wb = reactive(
             visibleFor,
             banner,
             formFields,
+            successContent,
         },
         { onSave: () => emit('save') }
     )
 );
 
-const backHref = computed(() => routes.admin.events.forms.index(props.event.id));
+const backHref = computed(() => routes.admin.events.show(props.event.id));
 const shellHeightClass = computed(() => (props.shell === 'fullscreen' ? 'h-svh' : 'min-h-0 lg:h-[calc(100svh-5rem)]'));
 const visibilityOptions = FORM_VISIBILITY_OPTIONS;
+/** Accordion "Pengaturan form" di panel kiri (bawaan tertutup). */
+const formSettingsOpen = ref(false);
+function toggleFormSettings(): void {
+    formSettingsOpen.value = !formSettingsOpen.value;
+}
+
+/** Handle untuk aksi toolbar eksternal (Pratinjau / Save All) dari halaman induk. */
+defineExpose({
+    showPreview: () => {
+        wb.showPreview = true;
+    },
+    requestSave: () => wb.requestSave(),
+});
 </script>
 
 <template>
@@ -82,6 +97,8 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
             :is-empty="wb.isEmpty"
             :processing="processing"
             :save-label="saveLabel"
+            :hide-titles="hideToolbarTitles"
+            :hide-toolbar="hideToolbar"
             @preview="wb.showPreview = true"
             @save="wb.requestSave"
         >
@@ -99,14 +116,27 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
         <div class="flex flex-1 flex-col overflow-visible lg:flex-row lg:overflow-hidden">
             <FormBuilderPalettePanel
                 v-model:search-query="wb.searchQuery"
+                v-model:closed-at="closedAt"
+                v-model:visible-for="visibleFor"
+                v-model:form-metadata="formMetadata"
                 :categories="wb.filteredCategories"
+                :open-category-name="wb.openCategoryName"
+                :form-settings-open="formSettingsOpen"
+                :field-errors="fieldErrors"
+                :visibility-options="visibilityOptions"
+                :sibling-forms="siblingForms"
                 @toggle-category="wb.toggleCategory"
+                @toggle-form-settings="toggleFormSettings"
+                @toggle-visibility="wb.toggleVisibility"
             />
 
             <main class="bg-background relative min-h-0 flex-1 overflow-visible lg:overflow-y-auto">
                 <FormBuilderCanvasBuildView
                     v-model:form-title="formTitle"
                     v-model:form-description="formDescription"
+                    v-model:success-content="successContent"
+                    v-model:banner="banner"
+                    :show-success-zone="wb.showSuccessZone"
                     :hide-on-mobile-settings="wb.mobileTab === 'settings'"
                     :banner-preview-src="wb.bannerPreviewSrc"
                     :is-empty="wb.isEmpty"
@@ -115,6 +145,7 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
                     :selected-field-id="wb.selectedFieldId"
                     :drop-indicator-index="wb.dropIndicatorIndex"
                     :drag-source-id="wb.dragSourceId"
+                    @remove="wb.hideSuccessZone"
                     @canvas-drag-over="wb.onCanvasDragOver"
                     @canvas-drag-leave="wb.onCanvasDragLeave"
                     @canvas-drop="wb.onCanvasDrop"
@@ -122,6 +153,8 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
                     @canvas-drag-start="wb.onCanvasDragStart"
                     @drag-end="wb.onDragEnd"
                     @select-field="wb.selectField"
+                    @update-field="wb.updateField"
+                    @manage-field="wb.openFieldManage"
                     @delete-field="wb.deleteField"
                     @duplicate-field="wb.duplicateField"
                     @move-field="wb.moveField"
@@ -129,17 +162,8 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
                 />
 
                 <div v-show="wb.mobileTab === 'settings'" class="px-4 pt-5 pb-24 lg:hidden">
-                    <div class="mx-auto max-w-[480px] space-y-5">
-                        <FormBuilderValidationSummary
-                            v-if="!wb.isReadyToSave"
-                            :issues="wb.validationIssues"
-                            density="comfortable"
-                        />
-
-                        <FormBuilderFormDetailsCard
-                            v-model:form-title="formTitle"
-                            v-model:form-description="formDescription"
-                            v-model:success-content="successContent"
+                    <div class="mx-auto max-w-[480px]">
+                        <FormSettingsPanel
                             v-model:closed-at="closedAt"
                             v-model:visible-for="visibleFor"
                             v-model:form-metadata="formMetadata"
@@ -149,8 +173,6 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
                             :sibling-forms="siblingForms"
                             @toggle-visibility="wb.toggleVisibility"
                         />
-
-                        <FormBuilderBannerBlock v-model:banner="banner" variant="card" />
                     </div>
                 </div>
             </main>
@@ -159,43 +181,19 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
                 <div class="grid grid-cols-2 gap-2">
                     <Button
                         variant="outline"
-                        class="border-border/80 bg-background h-11 rounded-xl text-sm font-medium shadow-sm"
+                        class="border-border/80 bg-background h-11 text-sm font-medium shadow-sm"
                         :disabled="wb.isEmpty"
                         aria-label="Pratinjau formulir"
                         @click="wb.showPreview = true"
                     >
                         Pratinjau
                     </Button>
-                    <Button
-                        class="h-11 rounded-xl text-sm font-medium shadow-sm"
-                        :disabled="processing"
-                        @click="wb.requestSave"
-                    >
+                    <Button class="h-11 text-sm font-medium shadow-sm" :disabled="processing" @click="wb.requestSave">
                         Simpan
                     </Button>
                 </div>
             </div>
-
-            <FormBuilderInspectorPanel
-                v-model:inspector-mode="wb.inspectorMode"
-                v-model:form-title="formTitle"
-                v-model:form-description="formDescription"
-                v-model:success-content="successContent"
-                v-model:closed-at="closedAt"
-                v-model:visible-for="visibleFor"
-                v-model:banner="banner"
-                v-model:form-metadata="formMetadata"
-                :selected-field="wb.selectedField"
-                :is-ready-to-save="wb.isReadyToSave"
-                :validation-issues="wb.validationIssues"
-                :field-errors="fieldErrors"
-                :visibility-options="visibilityOptions"
-                :sibling-forms="siblingForms"
-                @toggle-visibility="wb.toggleVisibility"
-                @update-field="wb.updateField"
-            />
         </div>
-
         <FormBuilderMobileAddFab v-if="wb.mobileTab === 'build' && !wb.isEmpty" @click="wb.showAddSheet = true" />
     </div>
 

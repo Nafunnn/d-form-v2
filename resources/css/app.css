@@ -16,6 +16,7 @@
     --animate-fade-in: fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
     --animate-shimmer: shimmer 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
     --animate-marquee: marquee 28s linear infinite;
+    --animate-shake: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -25,10 +26,6 @@
 }
 
 @theme inline {
-    --radius-sm: calc(var(--radius) - 6px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
@@ -70,7 +67,6 @@
 }
 
 :root {
-    --radius: 1rem;
     --background: oklch(0.985 0.004 255);
     --foreground: oklch(0.18 0.018 255);
     --card: oklch(1 0 0);
@@ -232,7 +228,7 @@
 @layer utilities {
     .app-page { @apply mx-auto w-full max-w-7xl px-4 py-8 sm:px-8; }
     .app-surface {
-        border: 1px solid var(--app-border); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-sm);
+        border: 1px solid var(--app-border); background: var(--card); box-shadow: var(--shadow-sm);
         transition: border-color 220ms var(--app-ease), box-shadow 220ms var(--app-ease);
     }
     .app-surface:hover { border-color: color-mix(in srgb, var(--primary) 18%, var(--app-border)); }
@@ -252,7 +248,6 @@
 }
 
 @layer components {
-    [data-slot='button'] { border-radius: 0.75rem; font-weight: 600; transition: background-color 180ms var(--app-ease); }
     [data-slot='badge'] { border-radius: 999px; font-weight: 600; box-shadow: none; }
     .app-scroll-area-thumb {
         background-color: var(--scrollbar-thumb);
@@ -271,6 +266,12 @@
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes app-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes app-slide-down { from { opacity: 0; max-height: 0; transform: translateY(-4px); } to { opacity: 1; max-height: 2000px; transform: translateY(0); } }
+@keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(2px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}
 
 @layer utilities {
     .animate-app-fade-in { opacity: 0; animation: app-rise 360ms var(--app-ease) forwards; }

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import TiptapRichHtml from '@/components/modules/dashboard/events/TiptapRichHtml.vue'
 import { CheckCircle2, ArrowRight, ClipboardList } from 'lucide-vue-next'
 
@@ -32,57 +32,51 @@ const successContent = computed(() => {
 <template>
     <Head :title="`Berhasil — ${form.title}`" />
 
-    <div class="mx-auto flex w-full max-w-2xl flex-col gap-6 py-4 sm:gap-8 sm:py-8">
-        <div class="flex flex-col items-center text-center">
-            <div
-                class="bg-success/10 text-success ring-success/20 mb-4 flex size-16 items-center justify-center rounded-full ring-1"
-            >
-                <CheckCircle2 class="size-8" aria-hidden="true" />
-            </div>
-            <h1 class="font-display text-foreground text-2xl font-bold tracking-tight sm:text-3xl">
-                Formulir berhasil dikirim
-            </h1>
-            <p class="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed sm:text-base">
-                Terima kasih. Jawaban Anda untuk
-                <span class="text-foreground font-medium">{{ form.title }}</span>
-                pada acara
-                <span class="text-foreground font-medium">{{ event.title }}</span>
-                sudah kami terima.
-            </p>
-        </div>
-
-        <Card v-if="successContent" class="border-border/70 rounded-2xl shadow-sm">
-            <CardHeader class="border-border/50 bg-muted/10 border-b px-5 py-4 sm:px-6">
-                <CardTitle class="font-display text-base font-bold tracking-tight sm:text-lg">
-                    Informasi
-                </CardTitle>
+    <div class="mx-auto w-full max-w-xl py-4 sm:py-8">
+        <Card class="overflow-hidden rounded-2xl border shadow-sm">
+            <CardHeader class="border-b bg-muted/20 px-6 py-5">
+                <div class="flex items-center gap-2">
+                    <CheckCircle2 class="size-5 text-success" aria-hidden="true" />
+                    <CardTitle class="font-display text-base font-semibold tracking-tight sm:text-lg">
+                        Formulir terkirim
+                    </CardTitle>
+                </div>
+                <CardDescription class="mt-1.5 text-sm">
+                    {{ form.title }} · {{ event.title }}
+                </CardDescription>
             </CardHeader>
-            <CardContent class="px-5 py-5 sm:px-6 sm:py-6">
-                <TiptapRichHtml :html="successContent" />
+            <CardContent class="px-6 py-6">
+                <TiptapRichHtml v-if="successContent" :html="successContent" />
+                <p v-else class="text-muted-foreground text-sm leading-relaxed">
+                    Terima kasih — jawaban Anda untuk
+                    <span class="text-foreground font-medium">{{ form.title }}</span>
+                    telah kami terima.
+                </p>
             </CardContent>
+            <CardFooter
+                class="flex flex-wrap gap-3 border-t px-6 py-4"
+            >
+                <Button
+                    v-if="isRegistrationForm && registrationUrl"
+                    as-child
+                    class="h-10 font-semibold shadow-sm"
+                >
+                    <Link :href="registrationUrl">
+                        <ClipboardList class="mr-2 size-4" aria-hidden="true" />
+                        Lihat detail pendaftaran
+                    </Link>
+                </Button>
+                <Button
+                    as-child
+                    :variant="isRegistrationForm && registrationUrl ? 'outline' : 'default'"
+                    class="h-10 font-semibold"
+                >
+                    <Link :href="eventUrl">
+                        Kembali ke acara
+                        <ArrowRight class="ml-2 size-4" aria-hidden="true" />
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Button
-                v-if="isRegistrationForm && registrationUrl"
-                as-child
-                class="h-11 rounded-xl font-semibold shadow-sm"
-            >
-                <Link :href="registrationUrl">
-                    <ClipboardList class="mr-2 size-4" aria-hidden="true" />
-                    Lihat detail pendaftaran
-                </Link>
-            </Button>
-            <Button
-                as-child
-                :variant="isRegistrationForm && registrationUrl ? 'outline' : 'default'"
-                class="h-11 rounded-xl font-semibold"
-            >
-                <Link :href="eventUrl">
-                    Kembali ke acara
-                    <ArrowRight class="ml-2 size-4" aria-hidden="true" />
-                </Link>
-            </Button>
-        </div>
     </div>
 </template>
