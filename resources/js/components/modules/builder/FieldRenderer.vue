@@ -3,14 +3,6 @@ import { computed } from 'vue'
 import { optionLabel, optionImageUrl } from '@/components/modules/builder/fieldMapping'
 import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
 import { normalizeBannerSrc } from '@/components/modules/builder/formBanner'
-import {
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu'
-import DropdownMenuCheckboxItem from '@/components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue'
 import type { BuilderField, FieldOptionEntry } from '@/types/form-builder'
 import {
     Type,
@@ -29,7 +21,6 @@ import {
     Heading as HeadingIcon,
     TextCursorInput,
     Minus,
-    MoreHorizontal,
     Settings2,
     Trash2,
     Copy,
@@ -57,8 +48,6 @@ function patch(partial: Partial<BuilderField>): void {
     emit('updateField', { ...props.field, ...partial })
 }
 
-const isContent = computed(() => ['heading', 'paragraph', 'divider'].includes(props.field.type))
-const hasAdvancedFlags = computed(() => !isContent.value)
 const hasOptions = computed(() => ['dropdown', 'checkbox', 'radio'].includes(props.field.type))
 
 const TYPE_CONFIG = {
@@ -159,14 +148,22 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 {{ config.label }}
             </span>
             <div class="ml-auto flex shrink-0 items-center gap-0.5">
-                <!-- Aksi langsung: tampil saat kartu terpilih, hover/focus, atau perangkat sentuh (selalu). -->
+                <!-- Aksi langsung (pola sama dengan baris Forms di card event) -->
                 <div
-                    class="flex items-center gap-0.5 transition-opacity duration-200"
-                    :class="isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'"
+                    class="flex shrink-0 items-center gap-0.5 opacity-60 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
                 >
                     <button
                         type="button"
-                        class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground"
+                        class="text-muted-foreground hover:text-primary focus-visible:text-primary inline-flex size-7 items-center justify-center rounded-md transition-colors outline-none hover:bg-transparent focus-visible:ring-ring/30 focus-visible:ring-[3px]"
+                        :title="hasOptions ? 'Kelola opsi' : 'Pengaturan'"
+                        :aria-label="hasOptions ? 'Kelola opsi' : 'Pengaturan field'"
+                        @click.stop="emit('manage')"
+                    >
+                        <Settings2 class="size-3.5" />
+                    </button>
+                    <button
+                        type="button"
+                        class="text-muted-foreground hover:text-primary focus-visible:text-primary inline-flex size-7 items-center justify-center rounded-md transition-colors outline-none hover:bg-transparent focus-visible:ring-ring/30 focus-visible:ring-[3px]"
                         title="Gandakan"
                         aria-label="Gandakan field"
                         @click.stop="emit('duplicate')"
@@ -175,7 +172,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                     </button>
                     <button
                         type="button"
-                        class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-destructive/10 hover:text-destructive"
+                        class="text-muted-foreground hover:text-destructive focus-visible:text-destructive inline-flex size-7 items-center justify-center rounded-md transition-colors outline-none hover:bg-transparent focus-visible:ring-ring/30 focus-visible:ring-[3px]"
                         title="Hapus"
                         aria-label="Hapus field"
                         @click.stop="emit('delete')"
@@ -183,55 +180,6 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                         <Trash2 class="size-3.5" />
                     </button>
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger as-child>
-                        <button
-                            type="button"
-                            class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-ring/30 focus-visible:ring-[3px] data-[state=open]:bg-muted data-[state=open]:text-foreground"
-                            :class="isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'"
-                            aria-label="Aksi field"
-                        >
-                            <MoreHorizontal class="size-4" />
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" class="w-56">
-                        <DropdownMenuCheckboxItem
-                            v-if="!isContent"
-                            :checked="!!field.required"
-                            @select.prevent="patch({ required: !field.required })"
-                        >
-                            Wajib diisi
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            v-if="hasAdvancedFlags"
-                            :checked="!!field.is_append"
-                            @select.prevent="patch({ is_append: !field.is_append })"
-                        >
-                            Anggota tim bisa ubah
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                            v-if="hasAdvancedFlags"
-                            :checked="field.metadata?.duplicatable === true"
-                            @select.prevent="
-                                patch({
-                                    metadata: {
-                                        ...(field.metadata || {}),
-                                        duplicatable: !(field.metadata?.duplicatable === true),
-                                    },
-                                })
-                            "
-                        >
-                            Duplikat per peserta
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem v-if="hasOptions" @select="emit('manage')">
-                            <Settings2 class="mr-2 size-4" /> Kelola opsi…
-                        </DropdownMenuItem>
-                        <DropdownMenuItem v-else @select="emit('manage')">
-                            <Settings2 class="mr-2 size-4" /> Pengaturan…
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
         </div>
 
