@@ -47,6 +47,8 @@ defineEmits<{
     canvasDragStart: [e: DragEvent, field: BuilderField, index: number];
     dragEnd: [];
     selectField: [id: string, isMobile?: boolean];
+    updateField: [field: BuilderField];
+    manageField: [id: string];
     deleteField: [id: string];
     duplicateField: [id: string];
     moveField: [id: string, dir: -1 | 1];
@@ -387,6 +389,8 @@ const showDropChrome = computed(
                                                     :field="field"
                                                     :is-selected="selectedFieldId === field.id"
                                                     @select="$emit('selectField', field.id)"
+                                                    @update-field="$emit('updateField', $event)"
+                                                    @manage="$emit('manageField', field.id)"
                                                     @delete="$emit('deleteField', field.id)"
                                                     @duplicate="$emit('duplicateField', field.id)"
                                                 />

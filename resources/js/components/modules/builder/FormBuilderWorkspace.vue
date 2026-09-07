@@ -11,7 +11,6 @@ import FormBuilderToolbar from './FormBuilderToolbar.vue';
 import FormBuilderMobileTabBar from './FormBuilderMobileTabBar.vue';
 import FormBuilderPalettePanel from './FormBuilderPalettePanel.vue';
 import FormBuilderCanvasBuildView from './FormBuilderCanvasBuildView.vue';
-import FormBuilderInspectorPanel from './FormBuilderInspectorPanel.vue';
 import FormBuilderAddFieldSheet from './FormBuilderAddFieldSheet.vue';
 import FormBuilderEditFieldSheet from './FormBuilderEditFieldSheet.vue';
 import FormBuilderMobileAddFab from './FormBuilderMobileAddFab.vue';
@@ -76,6 +75,12 @@ const visibilityOptions = FORM_VISIBILITY_OPTIONS;
 const formSettingsOpen = ref(false);
 function toggleFormSettings(): void {
     formSettingsOpen.value = !formSettingsOpen.value;
+}
+
+/** Buka sheet editor field (desktop & mobile) untuk id field dari kartu canvas. */
+function openFieldManage(id: string): void {
+    wb.selectField(id)
+    wb.showMobileEditor = true
 }
 
 /** Handle untuk aksi toolbar eksternal (Pratinjau / Save All) dari halaman induk. */
@@ -154,6 +159,8 @@ defineExpose({
                     @canvas-drag-start="wb.onCanvasDragStart"
                     @drag-end="wb.onDragEnd"
                     @select-field="wb.selectField"
+                    @update-field="wb.updateField"
+                    @manage-field="openFieldManage"
                     @delete-field="wb.deleteField"
                     @duplicate-field="wb.duplicateField"
                     @move-field="wb.moveField"
@@ -192,10 +199,7 @@ defineExpose({
                     </Button>
                 </div>
             </div>
-
-            <FormBuilderInspectorPanel :selected-field="wb.selectedField" @update-field="wb.updateField" />
         </div>
-
         <FormBuilderMobileAddFab v-if="wb.mobileTab === 'build' && !wb.isEmpty" @click="wb.showAddSheet = true" />
     </div>
 
