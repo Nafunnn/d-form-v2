@@ -294,9 +294,9 @@ const showDropChrome = computed(
 
                         <div
                             v-if="!isEmpty"
-                            class="flex min-h-[min(28rem,58vh)] flex-col sm:min-h-[min(30rem,55vh)] lg:min-h-[32rem]"
+                            class="flex flex-col"
                         >
-                            <div class="min-h-0 flex-1 overflow-x-visible overflow-y-auto pr-0.5">
+                            <div class="min-h-0 flex-1 pr-0.5">
                                 <TransitionGroup name="fb-field" tag="div" class="flex flex-col gap-3 lg:gap-4">
                                     <div
                                         v-for="(field, localIdx) in paginatedFields"

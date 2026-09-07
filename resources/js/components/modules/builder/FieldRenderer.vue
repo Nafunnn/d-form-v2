@@ -190,6 +190,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                             class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-ring/30 focus-visible:ring-[3px] data-[state=open]:bg-muted data-[state=open]:text-foreground"
                             :class="isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'"
                             aria-label="Aksi field"
+                            @click.stop
                         >
                             <MoreHorizontal class="size-4" />
                         </button>
