@@ -38,7 +38,14 @@ const emit = defineEmits<{
     (event: 'select'): void
     (event: 'delete'): void
     (event: 'duplicate'): void
+    (event: 'updateField', field: BuilderField): void
+    (event: 'manage'): void
 }>()
+
+/** Gabung perubahan parsial ke salinan field — kartu selalu kirim objek baru (immutable). */
+function patch(partial: Partial<BuilderField>): void {
+    emit('updateField', { ...props.field, ...partial })
+}
 
 const TYPE_CONFIG = {
     short_text: { icon: Type, label: 'Teks pendek', tone: 'neutral' },
@@ -160,13 +167,21 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
         <!-- Field content -->
         <div class="space-y-3 px-4 pt-3 pb-4 sm:px-5 sm:pb-5">
             <!-- Label -->
-            <label class="block font-display text-[15px] font-semibold tracking-tight text-foreground">
-                {{ field.label || 'Untitled Field' }}
+            <label class="group/label flex items-center gap-0.5">
+                <input
+                    :value="field.label"
+                    :placeholder="field.required ? 'Label pertanyaan' : 'Label pertanyaan (opsional)'"
+                    class="font-display w-full border-0 border-b border-transparent bg-transparent p-0 text-[15px] font-semibold tracking-tight text-foreground transition-colors duration-200 outline-none placeholder:text-muted-foreground/50 focus:border-primary/60 group-hover/label:border-border"
+                    @input="patch({ label: ($event.target as HTMLInputElement).value })"
+                />
                 <span v-if="field.required" class="text-destructive">*</span>
             </label>
-            <p v-if="field.description" class="-mt-1 text-xs leading-relaxed text-muted-foreground">
-                {{ field.description }}
-            </p>
+            <input
+                :value="field.description ?? ''"
+                :placeholder="field.description ? '' : 'Teks bantu (opsional)'"
+                class="w-full border-0 border-b border-transparent bg-transparent p-0 text-xs leading-relaxed text-muted-foreground transition-colors duration-200 outline-none placeholder:text-muted-foreground/45 hover:border-border/70 focus:border-primary/50"
+                @input="patch({ description: ($event.target as HTMLInputElement).value })"
+            />
 
             <!-- Preview by type -->
             <div class="mt-1">
