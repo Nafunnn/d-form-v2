@@ -16,4 +16,5 @@ enum EmailNotificationType: string
     case RecruitmentRevisionRequired = 'recruitment_revision_required';
     case RecruitmentPassedScreening = 'recruitment_passed_screening';
     case RecruitmentRejectedScreening = 'recruitment_rejected_screening';
+    case RecruitmentCorrectionRequestStaff = 'recruitment_correction_request_staff';
 }

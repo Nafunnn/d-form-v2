@@ -44,6 +44,17 @@ interface ActivityRow {
     actor: { id: string; name: string } | null
 }
 
+interface CorrectionRow {
+    id: string
+    status: string
+    status_label: string
+    request_message: string
+    review_notes: string | null
+    reviewed_at: string | null
+    completed_at: string | null
+    reviewer: { id: string; name: string } | null
+}
+
 interface ApplicationDetail {
     id: string
     registration_number: string
@@ -78,7 +89,9 @@ interface ApplicationDetail {
     } | null
     screenings: ScreeningRow[]
     activity_logs: ActivityRow[]
+    correction_requests: CorrectionRow[]
     can_screen: boolean
+    can_verify: boolean
 }
 
 const props = defineProps<{
@@ -91,6 +104,12 @@ const user = useAuth(page.props)
 const canScreen = computed(
     () => props.application.can_screen && user.value?.can_screen_recruitment_applications === true,
 )
+const canVerify = computed(() => props.application.can_verify && user.value?.can_screen_recruitment_applications === true)
+const canReviewCorrections = computed(() => user.value?.can_review_recruitment_corrections === true)
+
+const correctionReviewForm = useForm({
+    review_notes: '',
+})
 
 const screeningModalOpen = ref(false)
 const screeningAction = ref<ScreeningAction>(null)
@@ -144,6 +163,24 @@ function passApplication() {
     )
 }
 
+function verifyApplication() {
+    router.post(routes.admin.recruitment.applications.verify(props.application.id), {}, { preserveScroll: true })
+}
+
+function approveCorrection(correctionId: string) {
+    correctionReviewForm.post(routes.admin.recruitment.corrections.approve(correctionId), {
+        preserveScroll: true,
+        onSuccess: () => correctionReviewForm.reset(),
+    })
+}
+
+function rejectCorrection(correctionId: string) {
+    correctionReviewForm.post(routes.admin.recruitment.corrections.reject(correctionId), {
+        preserveScroll: true,
+        onSuccess: () => correctionReviewForm.reset(),
+    })
+}
+
 function formatBytes(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -166,20 +203,30 @@ const modalTitle = computed(() => {
             :subtitle="`${application.registration_number} · ${application.stage_label}`"
             :back-href="routes.admin.recruitment.applications.index"
         >
-            <template v-if="canScreen" #actions>
-                <Button size="sm" variant="outline" @click="openScreeningModal('revision')">
+            <template #actions>
+                <Button v-if="canVerify" size="sm" variant="secondary" @click="verifyApplication">
+                    Verifikasi pendaftaran
+                </Button>
+                <Button v-if="canScreen" size="sm" variant="outline" @click="openScreeningModal('revision')">
                     Minta revisi
                 </Button>
-                <Button size="sm" variant="destructive" @click="openScreeningModal('reject')">
+                <Button v-if="canScreen" size="sm" variant="destructive" @click="openScreeningModal('reject')">
                     <XCircle class="mr-2 size-4" />
                     Tolak
                 </Button>
-                <Button size="sm" @click="passApplication">
+                <Button v-if="canScreen" size="sm" @click="passApplication">
                     <CheckCircle2 class="mr-2 size-4" />
                     Lolos screening
                 </Button>
             </template>
         </PageHeader>
+
+        <div
+            v-if="application.is_verified"
+            class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+        >
+            Pendaftaran sudah diverifikasi staff.
+        </div>
 
         <div
             v-if="application.revision_required"
@@ -189,10 +236,11 @@ const modalTitle = computed(() => {
         </div>
 
         <Tabs default-value="overview" class="w-full">
-            <TabsList class="grid w-full grid-cols-4">
+            <TabsList class="grid w-full grid-cols-5">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="documents">Dokumen</TabsTrigger>
                 <TabsTrigger value="screening">Screening</TabsTrigger>
+                <TabsTrigger value="corrections">Koreksi</TabsTrigger>
                 <TabsTrigger value="history">Riwayat</TabsTrigger>
             </TabsList>
 
@@ -332,6 +380,47 @@ const modalTitle = computed(() => {
                         </div>
                         <p v-if="application.screenings.length === 0" class="text-muted-foreground text-sm">
                             Belum ada keputusan screening.
+                        </p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="corrections" class="mt-4">
+                <Card class="rounded-2xl border-border/70">
+                    <CardContent class="space-y-4 p-6">
+                        <div
+                            v-for="correction in application.correction_requests"
+                            :key="correction.id"
+                            class="rounded-xl border p-4"
+                        >
+                            <div class="flex flex-wrap items-start justify-between gap-2">
+                                <p class="font-medium">{{ correction.status_label }}</p>
+                                <p v-if="correction.reviewer" class="text-muted-foreground text-xs">
+                                    {{ correction.reviewer.name }}
+                                </p>
+                            </div>
+                            <p class="mt-2 text-sm">{{ correction.request_message }}</p>
+                            <p v-if="correction.review_notes" class="text-muted-foreground mt-2 text-sm">
+                                Catatan: {{ correction.review_notes }}
+                            </p>
+                            <div
+                                v-if="canReviewCorrections && correction.status === 'pending'"
+                                class="mt-4 flex flex-wrap gap-2"
+                            >
+                                <Button size="sm" @click="approveCorrection(correction.id)">
+                                    Setujui
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    @click="rejectCorrection(correction.id)"
+                                >
+                                    Tolak
+                                </Button>
+                            </div>
+                        </div>
+                        <p v-if="application.correction_requests.length === 0" class="text-muted-foreground text-sm">
+                            Belum ada permintaan koreksi.
                         </p>
                     </CardContent>
                 </Card>

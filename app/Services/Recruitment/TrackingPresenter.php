@@ -7,6 +7,11 @@ use App\Models\Recruitment\RecruitmentApplication;
 
 final class TrackingPresenter
 {
+    public function __construct(
+        private readonly ApplicationEditGate $editGate,
+    ) {
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -19,7 +24,12 @@ final class TrackingPresenter
             'interview',
             'queueEntry',
             'finalDecision.finalDivision',
+            'correctionRequests',
         ]);
+
+        $latestCorrection = $application->correctionRequests
+            ->sortByDesc('created_at')
+            ->first();
 
         return [
             'application' => $this->presentApplication($application),
@@ -30,6 +40,17 @@ final class TrackingPresenter
             'interview' => $this->presentInterview($application),
             'queue' => $this->presentQueue($application),
             'final' => $this->presentFinal($application),
+            'edit' => [
+                'can_edit' => $this->editGate->canEdit($application),
+                'can_request_correction' => $this->editGate->canRequestCorrection($application),
+                'latest_correction' => $latestCorrection ? [
+                    'id' => $latestCorrection->id,
+                    'status' => $latestCorrection->status->value,
+                    'status_label' => $latestCorrection->status->label(),
+                    'request_message' => $latestCorrection->request_message,
+                    'review_notes' => $latestCorrection->review_notes,
+                ] : null,
+            ],
         ];
     }
 
@@ -54,6 +75,7 @@ final class TrackingPresenter
             'result' => $application->result->value,
             'result_label' => $application->result->label(),
             'revision_required' => $application->revision_required,
+            'is_verified' => $application->is_verified,
             'submitted_at' => $application->submitted_at?->toIso8601String(),
         ];
     }

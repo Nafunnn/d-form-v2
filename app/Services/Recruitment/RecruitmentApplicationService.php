@@ -4,6 +4,7 @@ namespace App\Services\Recruitment;
 
 use App\Models\Recruitment\RecruitmentActivityLog;
 use App\Models\Recruitment\RecruitmentApplication;
+use App\Models\Recruitment\RecruitmentCorrectionRequest;
 use App\Models\Recruitment\RecruitmentDivision;
 use App\Models\Recruitment\RecruitmentPeriod;
 use App\Models\Recruitment\RecruitmentScreening;
@@ -92,6 +93,7 @@ final class RecruitmentApplicationService
             'document',
             'screenings.actor',
             'activityLogs.actor',
+            'correctionRequests.reviewer',
         ]);
 
         return [
@@ -161,7 +163,25 @@ final class RecruitmentApplicationService
                     ] : null,
                 ])
                 ->all(),
+            'correction_requests' => $application->correctionRequests
+                ->sortByDesc('created_at')
+                ->values()
+                ->map(fn (RecruitmentCorrectionRequest $correction): array => [
+                    'id' => $correction->id,
+                    'status' => $correction->status->value,
+                    'status_label' => $correction->status->label(),
+                    'request_message' => $correction->request_message,
+                    'review_notes' => $correction->review_notes,
+                    'reviewed_at' => $correction->reviewed_at?->toIso8601String(),
+                    'completed_at' => $correction->completed_at?->toIso8601String(),
+                    'reviewer' => $correction->reviewer ? [
+                        'id' => $correction->reviewer->id,
+                        'name' => $correction->reviewer->name,
+                    ] : null,
+                ])
+                ->all(),
             'can_screen' => $this->canScreen($application),
+            'can_verify' => $this->canVerify($application),
         ];
     }
 
@@ -211,6 +231,23 @@ final class RecruitmentApplicationService
             \App\Enums\Recruitment\ApplicationStage::Submitted,
             \App\Enums\Recruitment\ApplicationStage::Screening,
         ], true);
+    }
+
+    private function canVerify(RecruitmentApplication $application): bool
+    {
+        if ($application->cancelled_at !== null) {
+            return false;
+        }
+
+        if ($application->is_verified) {
+            return false;
+        }
+
+        if ($application->revision_required) {
+            return false;
+        }
+
+        return $application->result === \App\Enums\Recruitment\ApplicationResult::Pending;
     }
 
     /**

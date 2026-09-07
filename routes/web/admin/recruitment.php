@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Dashboard\Recruitment\RecruitmentApplicationController;
+use App\Http\Controllers\Dashboard\Recruitment\RecruitmentCorrectionController;
 use App\Http\Controllers\Dashboard\Recruitment\RecruitmentDashboardController;
 use App\Http\Controllers\Dashboard\Recruitment\RecruitmentDivisionController;
 use App\Http\Controllers\Dashboard\Recruitment\RecruitmentPeriodController;
@@ -33,4 +34,11 @@ Route::middleware(['auth', 'recruitment.access'])
             ->name('applications.screening.revision');
         Route::post('applications/{application}/screening/reject', [RecruitmentScreeningController::class, 'reject'])
             ->name('applications.screening.reject');
+        Route::post('applications/{application}/verify', [RecruitmentApplicationController::class, 'verify'])
+            ->name('applications.verify');
+
+        Route::post('corrections/{correction}/approve', [RecruitmentCorrectionController::class, 'approve'])
+            ->name('corrections.approve');
+        Route::post('corrections/{correction}/reject', [RecruitmentCorrectionController::class, 'reject'])
+            ->name('corrections.reject');
     });

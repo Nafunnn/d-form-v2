@@ -94,6 +94,11 @@ class RecruitmentApplication extends Model
         return $this->hasOne(RecruitmentFinalDecision::class, 'recruitment_application_id');
     }
 
+    public function correctionRequests(): HasMany
+    {
+        return $this->hasMany(RecruitmentCorrectionRequest::class, 'recruitment_application_id');
+    }
+
     public function screenings(): HasMany
     {
         return $this->hasMany(RecruitmentScreening::class, 'recruitment_application_id');

@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
+import { Head, Link, router, useForm } from '@inertiajs/vue3'
 import FormFillLayout from '@/layouts/FormFillLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 import { routes } from '@/lib/routes'
-import { CalendarClock, CheckCircle2, Circle, CircleDot, LogOut, MapPin, Users } from 'lucide-vue-next'
+import { CalendarClock, CheckCircle2, Circle, CircleDot, LogOut, MapPin, Pencil, Users } from 'lucide-vue-next'
 
 defineOptions({ layout: FormFillLayout })
 
@@ -27,6 +36,7 @@ interface TrackingPayload {
         result: string
         result_label: string
         revision_required: boolean
+        is_verified: boolean
         primary_division: string | null
         secondary_division: string | null
         submitted_at: string | null
@@ -50,12 +60,30 @@ interface TrackingPayload {
         result: string
         result_label: string
     } | null
+    edit: {
+        can_edit: boolean
+        can_request_correction: boolean
+        latest_correction: {
+            id: string
+            status: string
+            status_label: string
+            request_message: string
+            review_notes: string | null
+        } | null
+    }
 }
 
 const props = defineProps<{
     tracking: TrackingPayload
     logoutUrl: string
+    editUrl: string
+    correctionUrl: string
 }>()
+
+const correctionModalOpen = ref(false)
+const correctionForm = useForm({
+    request_message: '',
+})
 
 const submittedLabel = computed(() => {
     if (!props.tracking.application.submitted_at) return null
@@ -89,6 +117,16 @@ function timelineIcon(status: TimelineItem['status']) {
 function logout() {
     router.post(props.logoutUrl)
 }
+
+function submitCorrection() {
+    correctionForm.post(props.correctionUrl, {
+        preserveScroll: true,
+        onSuccess: () => {
+            correctionModalOpen.value = false
+            correctionForm.reset()
+        },
+    })
+}
 </script>
 
 <template>
@@ -111,6 +149,49 @@ function logout() {
                 Keluar
             </Button>
         </div>
+
+        <div
+            v-if="tracking.application.revision_required"
+            class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
+            Tim meminta revisi pendaftaran. Silakan perbarui data kamu.
+        </div>
+
+        <div v-if="tracking.edit.can_edit || tracking.edit.can_request_correction" class="flex flex-wrap gap-2">
+            <Button v-if="tracking.edit.can_edit" as-child size="sm">
+                <Link :href="editUrl">
+                    <Pencil class="mr-2 size-4" />
+                    Edit pendaftaran
+                </Link>
+            </Button>
+            <Button
+                v-if="tracking.edit.can_request_correction"
+                variant="outline"
+                size="sm"
+                @click="correctionModalOpen = true"
+            >
+                Ajukan permintaan koreksi
+            </Button>
+        </div>
+
+        <Card
+            v-if="tracking.edit.latest_correction"
+            class="rounded-2xl border-border/70"
+        >
+            <CardHeader class="pb-2">
+                <CardTitle class="text-base">Permintaan koreksi</CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-2 text-sm">
+                <p>
+                    Status:
+                    <span class="font-medium">{{ tracking.edit.latest_correction.status_label }}</span>
+                </p>
+                <p class="text-muted-foreground">{{ tracking.edit.latest_correction.request_message }}</p>
+                <p v-if="tracking.edit.latest_correction.review_notes" class="text-muted-foreground">
+                    Catatan staff: {{ tracking.edit.latest_correction.review_notes }}
+                </p>
+            </CardContent>
+        </Card>
 
         <Card class="rounded-2xl border-border/70">
             <CardHeader class="pb-2">
@@ -219,4 +300,38 @@ function logout() {
             </Button>
         </div>
     </div>
+
+    <Dialog v-model:open="correctionModalOpen">
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Permintaan koreksi</DialogTitle>
+                <DialogDescription>
+                    Jelaskan data apa yang perlu diperbaiki. Tim akan meninjau permintaanmu.
+                </DialogDescription>
+            </DialogHeader>
+            <form class="space-y-4" @submit.prevent="submitCorrection">
+                <div class="space-y-2">
+                    <Label for="request_message">Pesan</Label>
+                    <textarea
+                        id="request_message"
+                        v-model="correctionForm.request_message"
+                        rows="4"
+                        required
+                        minlength="10"
+                        class="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                        placeholder="Contoh: NIM saya salah ketik..."
+                    />
+                    <p v-if="correctionForm.errors.request_message" class="text-destructive text-xs">
+                        {{ correctionForm.errors.request_message }}
+                    </p>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" @click="correctionModalOpen = false">
+                        Batal
+                    </Button>
+                    <Button type="submit" :disabled="correctionForm.processing">Kirim permintaan</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
 </template>

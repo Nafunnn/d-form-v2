@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Recruitment;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Recruitment\AuthenticateTrackingRequest;
+use App\Http\Requests\Recruitment\UpdateApplicationRequest;
+use App\Services\Recruitment\ApplicationEditGate;
+use App\Services\Recruitment\ApplicationEditor;
+use App\Services\Recruitment\RecruitmentDivisionService;
 use App\Services\Recruitment\RecruitmentTrackingAuthenticator;
 use App\Services\Recruitment\RecruitmentTrackingSession;
 use App\Services\Recruitment\TrackingPresenter;
@@ -18,6 +22,9 @@ class TrackingController extends Controller
         private readonly RecruitmentTrackingAuthenticator $authenticator,
         private readonly RecruitmentTrackingSession $trackingSession,
         private readonly TrackingPresenter $presenter,
+        private readonly ApplicationEditGate $editGate,
+        private readonly ApplicationEditor $applicationEditor,
+        private readonly RecruitmentDivisionService $divisionService,
     ) {
     }
 
@@ -60,7 +67,70 @@ class TrackingController extends Controller
         return Inertia::render('OpenRecruitment/Track/Show', [
             'tracking' => $this->presenter->present($application),
             'logoutUrl' => route('open-recruitment.track.logout'),
+            'editUrl' => route('open-recruitment.track.edit'),
+            'correctionUrl' => route('open-recruitment.track.correction'),
         ]);
+    }
+
+    public function edit(Request $request): Response|RedirectResponse
+    {
+        /** @var \App\Models\Recruitment\RecruitmentApplication $application */
+        $application = $request->attributes->get('recruitment_application');
+        $application->loadMissing(['document', 'primaryDivision', 'secondaryDivision']);
+
+        if (! $this->editGate->canEdit($application)) {
+            return redirect()
+                ->route('open-recruitment.track.show')
+                ->withErrors([
+                    'edit' => 'Pendaftaran tidak dapat diedit saat ini.',
+                ]);
+        }
+
+        $document = $application->document;
+
+        return Inertia::render('OpenRecruitment/Track/Edit', [
+            'application' => [
+                'full_name' => $application->full_name,
+                'nim' => $application->nim,
+                'semester' => $application->semester,
+                'phone' => $application->phone,
+                'personal_email' => $application->personal_email,
+                'student_email' => $application->student_email,
+                'instagram_username' => $application->instagram_username,
+                'primary_division_id' => $application->primary_division_id,
+                'secondary_division_id' => $application->secondary_division_id,
+                'portfolio_type' => $document?->portfolio_type ?? 'url',
+                'portfolio_url' => $document?->portfolio_url,
+                'cv_original_name' => $document?->cv_original_name,
+                'portfolio_original_name' => $document?->portfolio_original_name,
+            ],
+            'divisions' => $this->divisionService->listActiveOrdered()
+                ->map(fn ($division) => $this->divisionService->toInertiaArray($division))
+                ->values()
+                ->all(),
+            'updateUrl' => route('open-recruitment.track.update'),
+            'dashboardUrl' => route('open-recruitment.track.show'),
+        ]);
+    }
+
+    public function update(UpdateApplicationRequest $request): RedirectResponse
+    {
+        /** @var \App\Models\Recruitment\RecruitmentApplication $application */
+        $application = $request->attributes->get('recruitment_application');
+
+        $this->applicationEditor->update(
+            $application,
+            $request->validatedPayload(),
+            $request->file('cv'),
+            $request->file('portfolio_file'),
+        );
+
+        return redirect()
+            ->route('open-recruitment.track.show')
+            ->with('toast', [
+                'type' => 'success',
+                'message' => 'Perubahan pendaftaran berhasil disimpan.',
+            ]);
     }
 
     public function logout(): RedirectResponse

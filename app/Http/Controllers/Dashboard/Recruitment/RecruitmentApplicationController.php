@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Dashboard\Recruitment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Recruitment\IndexRecruitmentApplicationRequest;
 use App\Models\Recruitment\RecruitmentApplication;
+use App\Services\Recruitment\ApplicationVerificationService;
 use App\Services\Recruitment\RecruitmentApplicationService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,6 +18,7 @@ class RecruitmentApplicationController extends Controller
 {
     public function __construct(
         private readonly RecruitmentApplicationService $applicationService,
+        private readonly ApplicationVerificationService $verificationService,
     ) {
     }
 
@@ -80,5 +84,17 @@ class RecruitmentApplicationController extends Controller
         }
 
         abort(404);
+    }
+
+    public function verify(Request $request, RecruitmentApplication $application): RedirectResponse
+    {
+        $this->authorize('view', $application);
+        abort_unless($request->user()?->can('recruitment.screening.review'), 403);
+
+        $this->verificationService->verify($request->user(), $application, $request);
+
+        return redirect()
+            ->route('dashboard.recruitment.applications.show', $application)
+            ->with('message', 'Pendaftaran berhasil diverifikasi.');
     }
 }

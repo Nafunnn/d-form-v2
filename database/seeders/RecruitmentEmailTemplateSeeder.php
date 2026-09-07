@@ -39,6 +39,11 @@ class RecruitmentEmailTemplateSeeder extends Seeder
                 'body_html' => '<p>Halo {{applicant_name}},</p><p>Selamat! Kamu diterima sebagai {{membership_type}} di divisi {{final_division}}.</p>',
             ],
             [
+                'event_type' => 'correction_request_staff',
+                'subject' => '[DOSCOM OpRec] Permintaan Koreksi — {{registration_number}}',
+                'body_html' => '<p>Applicant <strong>{{applicant_name}}</strong> ({{registration_number}}) mengajukan permintaan koreksi.</p><p><strong>Pesan:</strong> {{correction_request_message}}</p><p><a href="{{application_admin_url}}">Buka di dashboard</a></p>',
+            ],
+            [
                 'event_type' => 'rejected_screening',
                 'subject' => '[DOSCOM OpRec] Hasil Screening',
                 'body_html' => '<p>Halo {{applicant_name}},</p><p>Terima kasih telah mengikuti OpenRecruitment DOSCOM. Mohon maaf, kamu belum lolos tahap screening.</p><p>Pantau informasi di <a href="{{tracking_url}}">{{tracking_url}}</a></p>',

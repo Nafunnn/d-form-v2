@@ -68,6 +68,13 @@ final class RecruitmentEmailRenderer
                     .'<p>Terima kasih telah mengikuti OpenRecruitment DOSCOM.</p>',
                 'body_text' => 'Terima kasih telah mengikuti OpenRecruitment DOSCOM.',
             ],
+            'correction_request_staff' => [
+                'subject' => '[DOSCOM OpRec] Permintaan Koreksi — '.$variables['registration_number'],
+                'body_html' => '<p>Applicant '.$variables['applicant_name'].' ('.$variables['registration_number'].') mengajukan permintaan koreksi.</p>'
+                    .'<p><strong>Pesan:</strong> '.$variables['correction_request_message'].'</p>'
+                    .'<p><a href="'.$variables['application_admin_url'].'">Buka di dashboard</a></p>',
+                'body_text' => 'Permintaan koreksi dari '.$variables['applicant_name'].'. '.$variables['application_admin_url'],
+            ],
             default => $this->fallbackApplicationSubmitted($variables),
         };
     }

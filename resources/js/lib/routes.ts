@@ -25,6 +25,9 @@ export const routes = {
         track: {
             login: '/open-recruitment/track',
             dashboard: '/open-recruitment/track/dashboard',
+            edit: '/open-recruitment/track/edit',
+            update: '/open-recruitment/track',
+            correction: '/open-recruitment/track/correction',
             logout: '/open-recruitment/track/logout',
         },
     },
@@ -80,6 +83,11 @@ export const routes = {
                     revision: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}/screening/revision`,
                     reject: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}/screening/reject`,
                 },
+                verify: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}/verify`,
+            },
+            corrections: {
+                approve: (id: string) => `${ADMIN_BASE}/recruitment/corrections/${id}/approve`,
+                reject: (id: string) => `${ADMIN_BASE}/recruitment/corrections/${id}/reject`,
             },
         },
         events: {

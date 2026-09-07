@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Recruitment\ApplicationController;
+use App\Http\Controllers\Recruitment\CorrectionRequestController;
 use App\Http\Controllers\Recruitment\LandingController;
 use App\Http\Controllers\Recruitment\TrackingController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,9 @@ Route::prefix('open-recruitment')
 
         Route::middleware('recruitment.tracking.session')->group(function (): void {
             Route::get('/track/dashboard', [TrackingController::class, 'show'])->name('track.show');
+            Route::get('/track/edit', [TrackingController::class, 'edit'])->name('track.edit');
+            Route::put('/track', [TrackingController::class, 'update'])->name('track.update');
+            Route::post('/track/correction', [CorrectionRequestController::class, 'store'])->name('track.correction');
             Route::post('/track/logout', [TrackingController::class, 'logout'])->name('track.logout');
         });
     });
