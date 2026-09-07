@@ -23,6 +23,7 @@ import {
     Minus,
     Trash2,
     Copy,
+    GripVertical,
 } from 'lucide-vue-next'
 
 const props = withDefaults(
@@ -40,22 +41,31 @@ const emit = defineEmits<{
 }>()
 
 const TYPE_CONFIG = {
-    short_text: { icon: Type, label: 'Teks pendek', accent: '#2563eb' },
-    long_text: { icon: AlignLeft, label: 'Teks panjang', accent: '#4f46e5' },
-    email: { icon: Mail, label: 'Email', accent: '#0891b2' },
-    phone: { icon: Phone, label: 'Telepon', accent: '#059669' },
-    number: { icon: Hash, label: 'Angka', accent: '#d97706' },
-    dropdown: { icon: ChevronDown, label: 'Dropdown', accent: '#7c3aed' },
-    checkbox: { icon: SquareCheck, label: 'Centang', accent: '#db2777' },
-    radio: { icon: CircleDot, label: 'Pilihan tunggal', accent: '#e11d48' },
-    image_upload: { icon: ImagePlus, label: 'Gambar', accent: '#0d9488' },
-    file_upload: { icon: Upload, label: 'File', accent: '#475569' },
-    date: { icon: Calendar, label: 'Tanggal', accent: '#7c3aed' },
-    time: { icon: Clock, label: 'Waktu', accent: '#059669' },
-    rating: { icon: Star, label: 'Rating', accent: '#f59e0b' },
-    heading: { icon: HeadingIcon, label: 'Judul', accent: '#1a1a2e' },
-    paragraph: { icon: TextCursorInput, label: 'Paragraf', accent: '#6b7280' },
-    divider: { icon: Minus, label: 'Pemisah', accent: '#9ca3af' },
+    short_text: { icon: Type, label: 'Teks pendek', tone: 'neutral' },
+    long_text: { icon: AlignLeft, label: 'Teks panjang', tone: 'neutral' },
+    email: { icon: Mail, label: 'Email', tone: 'info' },
+    phone: { icon: Phone, label: 'Telepon', tone: 'info' },
+    number: { icon: Hash, label: 'Angka', tone: 'info' },
+    dropdown: { icon: ChevronDown, label: 'Dropdown', tone: 'primary' },
+    checkbox: { icon: SquareCheck, label: 'Centang', tone: 'primary' },
+    radio: { icon: CircleDot, label: 'Pilihan tunggal', tone: 'primary' },
+    image_upload: { icon: ImagePlus, label: 'Gambar', tone: 'success' },
+    file_upload: { icon: Upload, label: 'File', tone: 'success' },
+    date: { icon: Calendar, label: 'Tanggal', tone: 'info' },
+    time: { icon: Clock, label: 'Waktu', tone: 'info' },
+    rating: { icon: Star, label: 'Rating', tone: 'warning' },
+    heading: { icon: HeadingIcon, label: 'Judul', tone: 'neutral' },
+    paragraph: { icon: TextCursorInput, label: 'Paragraf', tone: 'neutral' },
+    divider: { icon: Minus, label: 'Pemisah', tone: 'neutral' },
+}
+
+/** Aksen kecil per kategori field — berbasis tone token proyek, bukan warna acak. */
+const FIELD_TONE_CLASSES: Record<'neutral' | 'info' | 'primary' | 'success' | 'warning', string> = {
+    neutral: 'text-muted-foreground',
+    info: 'text-info',
+    primary: 'text-primary',
+    success: 'text-success',
+    warning: 'text-warning',
 }
 
 const config = computed(() => TYPE_CONFIG[props.field.type as keyof typeof TYPE_CONFIG] || TYPE_CONFIG.short_text)
@@ -103,24 +113,42 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
         @click="emit('select')"
     >
         <!-- Type badge + actions bar -->
-        <div class="flex items-center justify-between px-5 pt-4 pb-2">
+        <div class="group/head flex items-center gap-2.5 px-4 pt-3.5 sm:px-5">
+            <GripVertical class="hidden size-3.5 cursor-grab text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/80 lg:block" aria-hidden="true" />
             <span
-                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white"
-                :style="{ backgroundColor: config.accent }"
+                class="inline-flex items-center gap-2 rounded-lg border px-1.5 py-1.5"
+                :class="
+                    isSelected
+                        ? 'border-border/80 bg-background shadow-xs'
+                        : 'border-border/80 bg-background/60 shadow-xs group-hover:border-border'
+                "
             >
-                <component :is="config.icon" class="size-3.5" />
+                <component
+                    :is="config.icon"
+                    class="size-4"
+                    :stroke-width="2.25"
+                    :class="FIELD_TONE_CLASSES[config.tone]"
+                    aria-hidden="true"
+                />
+            </span>
+            <span
+                class="text-muted-foreground min-w-0 truncate text-[11px] font-semibold tracking-wide"
+                :class="isSelected ? '' : 'text-muted-foreground/85'"
+            >
                 {{ config.label }}
             </span>
-            <div class="flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <div class="ml-auto flex gap-0.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
                 <button
-                    class="grid size-8 place-items-center text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
+                    type="button"
+                    class="text-muted-foreground hover:bg-muted hover:text-foreground grid size-7 place-items-center rounded-full transition-colors duration-200"
                     title="Gandakan"
                     @click.stop="emit('duplicate')"
                 >
                     <Copy class="size-3.5" />
                 </button>
                 <button
-                    class="grid size-8 place-items-center text-muted-foreground transition-colors duration-200 hover:bg-destructive/10 hover:text-destructive"
+                    type="button"
+                    class="text-muted-foreground hover:bg-destructive/10 hover:text-destructive grid size-7 place-items-center rounded-full transition-colors duration-200"
                     title="Hapus"
                     @click.stop="emit('delete')"
                 >
@@ -130,7 +158,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
         </div>
 
         <!-- Field content -->
-        <div class="space-y-3 px-5 pb-5 pt-1">
+        <div class="space-y-3 px-4 pt-3 pb-4 sm:px-5 sm:pb-5">
             <!-- Label -->
             <label class="block font-display text-[15px] font-semibold tracking-tight text-foreground">
                 {{ field.label || 'Untitled Field' }}
@@ -145,7 +173,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 <!-- Short text / Email / Phone / Number -->
                 <div
                     v-if="['short_text', 'email', 'phone', 'number'].includes(field.type)"
-                    class="rounded-xl border border-border bg-muted/25 p-2"
+                    class="rounded-xl border border-border/70 bg-muted/20 p-1.5"
                 >
                     <input
                         :type="
@@ -169,7 +197,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 <!-- Long text -->
                 <div
                     v-else-if="field.type === 'long_text'"
-                    class="rounded-xl border border-border bg-muted/25 p-2"
+                    class="rounded-xl border border-border/70 bg-muted/20 p-1.5"
                 >
                     <textarea
                         readonly
@@ -187,7 +215,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 <!-- Dropdown -->
                 <div v-else-if="field.type === 'dropdown'" class="space-y-2">
                     <div
-                        class="flex items-center justify-between rounded-xl border border-border bg-muted/25 px-4 py-3"
+                        class="flex items-center justify-between rounded-xl border border-border/70 bg-muted/20 px-4 py-3"
                     >
                         <span class="text-sm text-muted-foreground/75">{{
                             String(field.placeholder ?? '').trim() || 'Pilih salah satu…'
@@ -260,7 +288,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 <!-- Image upload -->
                 <div
                     v-else-if="field.type === 'image_upload'"
-                    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-6"
+                    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 py-6"
                 >
                     <div
                         class="mb-2 flex size-10 items-center justify-center rounded-full bg-primary/8 text-primary"
@@ -280,7 +308,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 <!-- File upload -->
                 <div
                     v-else-if="field.type === 'file_upload'"
-                    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-6"
+                    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/20 py-6"
                 >
                     <div
                         class="mb-2 flex size-10 items-center justify-center rounded-full bg-muted/50 text-muted-foreground"
@@ -291,10 +319,10 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                     <p class="mt-0.5 text-[10px] text-muted-foreground/60">PDF, DOC, XLS hingga 10 MB</p>
                 </div>
 
-                <!-- File upload -->
+                <!-- Date -->
                 <div
                     v-else-if="field.type === 'date'"
-                    class="rounded-xl border border-border bg-muted/25 p-2"
+                    class="rounded-xl border border-border/70 bg-muted/20 p-1.5"
                 >
                     <input
                         type="text"
@@ -309,7 +337,7 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                 <!-- Time -->
                 <div
                     v-else-if="field.type === 'time'"
-                    class="rounded-xl border border-border bg-muted/25 p-2"
+                    class="rounded-xl border border-border/70 bg-muted/20 p-1.5"
                 >
                     <input
                         type="text"
