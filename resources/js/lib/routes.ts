@@ -18,6 +18,13 @@ export const routes = {
         },
     },
 
+    openRecruitment: {
+        landing: '/open-recruitment',
+        apply: '/open-recruitment/apply',
+        success: '/open-recruitment/success',
+        track: '/open-recruitment/track',
+    },
+
     auth: {
         login: '/auth/login',
         register: '/auth/register',

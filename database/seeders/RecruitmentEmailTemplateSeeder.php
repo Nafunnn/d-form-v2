@@ -16,7 +16,7 @@ class RecruitmentEmailTemplateSeeder extends Seeder
             [
                 'event_type' => 'application_submitted',
                 'subject' => '[DOSCOM OpRec] Konfirmasi Pendaftaran — {{registration_number}}',
-                'body_html' => '<p>Halo {{applicant_name}},</p><p>Pendaftaran OpenRecruitment DOSCOM kamu telah berhasil diterima.</p><p><strong>Nomor Pendaftaran:</strong> {{registration_number}}</p>',
+                'body_html' => '<p>Halo {{applicant_name}},</p><p>Pendaftaran OpenRecruitment DOSCOM kamu telah berhasil diterima.</p><p><strong>Nomor Pendaftaran:</strong> {{registration_number}}</p><p><strong>Token Tracking:</strong> {{tracking_token}}</p><p>Pantau progress di <a href="{{tracking_url}}">{{tracking_url}}</a></p>',
             ],
             [
                 'event_type' => 'revision_required',
@@ -52,7 +52,7 @@ class RecruitmentEmailTemplateSeeder extends Seeder
                     'subject' => $template['subject'],
                     'body_html' => $template['body_html'],
                     'body_text' => strip_tags($template['body_html']),
-                    'available_variables' => ['applicant_name', 'registration_number', 'period_name'],
+                    'available_variables' => ['applicant_name', 'registration_number', 'period_name', 'tracking_url', 'tracking_token'],
                     'is_active' => true,
                 ],
             );

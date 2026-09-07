@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RecruitmentApplication extends Model
 {
@@ -70,5 +71,10 @@ class RecruitmentApplication extends Model
     public function secondaryDivision(): BelongsTo
     {
         return $this->belongsTo(RecruitmentDivision::class, 'secondary_division_id');
+    }
+
+    public function document(): HasOne
+    {
+        return $this->hasOne(RecruitmentDocument::class, 'recruitment_application_id');
     }
 }

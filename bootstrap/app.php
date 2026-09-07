@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'organizer' => \App\Http\Middleware\EnsureOrganizerDashboardAccess::class,
             'member_portal' => \App\Http\Middleware\EnsureMemberPortalAccess::class,
             'recruitment.access' => \App\Http\Middleware\EnsureRecruitmentAccess::class,
+            'recruitment.period.open' => \App\Http\Middleware\EnsureRecruitmentPeriodOpen::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
