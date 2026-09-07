@@ -32,6 +32,7 @@ const { isMobile, setOpenMobile } = useSidebar();
 const canManageEvents = computed(() => user.value?.can_manage_events === true);
 const canAccessRecruitment = computed(() => user.value?.can_access_recruitment === true);
 const canManageRecruitmentPeriods = computed(() => user.value?.can_manage_recruitment_periods === true);
+const canListRecruitmentApplications = computed(() => user.value?.can_list_recruitment_applications === true);
 
 const currentPath = computed(() => page.url);
 
@@ -70,6 +71,10 @@ const recruitmentSubItems = computed(() => {
     if (!canAccessRecruitment.value) return [];
 
     const items = [{ label: 'Dashboard', href: routes.admin.recruitment.index }];
+
+    if (canListRecruitmentApplications.value) {
+        items.push({ label: 'Applicant', href: routes.admin.recruitment.applications.index });
+    }
 
     if (canManageRecruitmentPeriods.value) {
         items.push(

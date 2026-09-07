@@ -70,6 +70,17 @@ export const routes = {
                 assign: `${ADMIN_BASE}/recruitment/interviewers/assign`,
                 unassign: (id: string) => `${ADMIN_BASE}/recruitment/interviewers/${id}`,
             },
+            applications: {
+                index: `${ADMIN_BASE}/recruitment/applications`,
+                show: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}`,
+                document: (id: string, type: 'cv' | 'portfolio') =>
+                    `${ADMIN_BASE}/recruitment/applications/${id}/documents/${type}`,
+                screening: {
+                    pass: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}/screening/pass`,
+                    revision: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}/screening/revision`,
+                    reject: (id: string) => `${ADMIN_BASE}/recruitment/applications/${id}/screening/reject`,
+                },
+            },
         },
         events: {
             index: `${ADMIN_BASE}/events`,
@@ -148,6 +159,9 @@ export function isSidebarNavActive(href: string, currentUrl: string): boolean {
     }
     if (href.startsWith(routes.admin.recruitment.divisions.index)) {
         return path.startsWith(routes.admin.recruitment.divisions.index);
+    }
+    if (href.startsWith(routes.admin.recruitment.applications.index)) {
+        return path.startsWith(routes.admin.recruitment.applications.index);
     }
 
     return path.startsWith(href);

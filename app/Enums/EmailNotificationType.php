@@ -13,4 +13,7 @@ enum EmailNotificationType: string
     case TeamMemberInvitationAcceptedLeaderNotice = 'team_member_invitation_accepted_leader_notice';
     case TeamMemberInvitationDeclinedLeaderNotice = 'team_member_invitation_declined_leader_notice';
     case RecruitmentApplicationSubmitted = 'recruitment_application_submitted';
+    case RecruitmentRevisionRequired = 'recruitment_revision_required';
+    case RecruitmentPassedScreening = 'recruitment_passed_screening';
+    case RecruitmentRejectedScreening = 'recruitment_rejected_screening';
 }

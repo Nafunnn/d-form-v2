@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RecruitmentApplication extends Model
@@ -91,5 +92,15 @@ class RecruitmentApplication extends Model
     public function finalDecision(): HasOne
     {
         return $this->hasOne(RecruitmentFinalDecision::class, 'recruitment_application_id');
+    }
+
+    public function screenings(): HasMany
+    {
+        return $this->hasMany(RecruitmentScreening::class, 'recruitment_application_id');
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(RecruitmentActivityLog::class, 'recruitment_application_id');
     }
 }

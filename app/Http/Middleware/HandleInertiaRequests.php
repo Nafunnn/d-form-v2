@@ -64,6 +64,8 @@ class HandleInertiaRequests extends Middleware
                     'can_manage_events' => $user->can('events.list'),
                     'can_access_recruitment' => $user->can('recruitment.dashboard.view'),
                     'can_manage_recruitment_periods' => $user->can('recruitment.periods.list'),
+                    'can_list_recruitment_applications' => $user->can('recruitment.applications.list'),
+                    'can_screen_recruitment_applications' => $user->can('recruitment.screening.decide'),
                     'avatar' => UserAvatarService::resolvePublicUrl($user->avatar, $request),
                 ],
             ) : null,

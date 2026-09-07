@@ -32,7 +32,7 @@ final class RecruitmentEmailRenderer
             ->first();
 
         if ($template === null) {
-            return $this->fallbackApplicationSubmitted($variables);
+            return $this->fallbackTemplate($eventType, $variables);
         }
 
         return [
@@ -40,6 +40,36 @@ final class RecruitmentEmailRenderer
             'body_html' => $this->render($template->body_html, $variables),
             'body_text' => $this->render($template->body_text ?? strip_tags($template->body_html), $variables),
         ];
+    }
+
+    /**
+     * @param  array<string, string>  $variables
+     * @return array{subject: string, body_html: string, body_text: string}
+     */
+    private function fallbackTemplate(string $eventType, array $variables): array
+    {
+        return match ($eventType) {
+            'revision_required' => [
+                'subject' => '[DOSCOM OpRec] Perlu Revisi Pendaftaran',
+                'body_html' => '<p>Halo '.$variables['applicant_name'].',</p>'
+                    .'<p>Pendaftaranmu memerlukan revisi. Silakan periksa tracking portal di '
+                    .$variables['tracking_url'].'</p>',
+                'body_text' => 'Pendaftaranmu memerlukan revisi. Pantau di '.$variables['tracking_url'],
+            ],
+            'passed_screening' => [
+                'subject' => '[DOSCOM OpRec] Lolos Screening',
+                'body_html' => '<p>Halo '.$variables['applicant_name'].',</p>'
+                    .'<p>Selamat! Kamu lolos tahap screening OpenRecruitment.</p>',
+                'body_text' => 'Selamat! Kamu lolos tahap screening OpenRecruitment.',
+            ],
+            'rejected_screening' => [
+                'subject' => '[DOSCOM OpRec] Hasil Screening',
+                'body_html' => '<p>Halo '.$variables['applicant_name'].',</p>'
+                    .'<p>Terima kasih telah mengikuti OpenRecruitment DOSCOM.</p>',
+                'body_text' => 'Terima kasih telah mengikuti OpenRecruitment DOSCOM.',
+            ],
+            default => $this->fallbackApplicationSubmitted($variables),
+        };
     }
 
     /**

@@ -24,6 +24,8 @@ interface Stats {
     total_applicants: number
     pending_screening: number
     in_screening: number
+    passed_screening: number
+    rejected_applicants: number
     in_interview: number
     final_review: number
     completed: number
@@ -40,6 +42,8 @@ const page = usePage()
 const user = useAuth(page.props)
 const canManagePeriods = computed(() => user.value?.can_manage_recruitment_periods === true)
 
+const canListApplications = computed(() => user.value?.can_list_recruitment_applications === true)
+
 onMounted(() => {
     setTopbar({ title: 'Rekrutmen', subtitle: 'OpenRecruitment DOSCOM' })
 })
@@ -48,6 +52,8 @@ const statCards = computed(() => [
     { label: 'Total applicant', value: props.summary.stats.total_applicants },
     { label: 'Menunggu screening', value: props.summary.stats.pending_screening },
     { label: 'Dalam screening', value: props.summary.stats.in_screening },
+    { label: 'Lolos screening', value: props.summary.stats.passed_screening },
+    { label: 'Ditolak', value: props.summary.stats.rejected_applicants },
     { label: 'Tahap interview', value: props.summary.stats.in_interview },
     { label: 'Final review', value: props.summary.stats.final_review },
     { label: 'Selesai', value: props.summary.stats.completed },
@@ -113,6 +119,20 @@ const statCards = computed(() => [
                 </CardContent>
             </Card>
         </div>
+
+        <Card v-if="canListApplications" class="rounded-2xl border-dashed border-border/70">
+            <CardContent class="flex flex-wrap items-center justify-between gap-4 p-6">
+                <div>
+                    <p class="font-medium">Kelola applicant</p>
+                    <p class="text-muted-foreground text-sm">
+                        Tinjau pendaftaran, unduh dokumen, dan ambil keputusan screening.
+                    </p>
+                </div>
+                <Button as-child>
+                    <Link :href="routes.admin.recruitment.applications.index">Daftar applicant</Link>
+                </Button>
+            </CardContent>
+        </Card>
 
         <Card v-if="canManagePeriods" class="rounded-2xl border-dashed border-border/70">
             <CardContent class="flex flex-wrap items-center justify-between gap-4 p-6">
