@@ -3,6 +3,14 @@ import { computed } from 'vue'
 import { optionLabel, optionImageUrl } from '@/components/modules/builder/fieldMapping'
 import FormParagraphContent from '@/components/modules/dashboard/FormParagraphContent.vue'
 import { normalizeBannerSrc } from '@/components/modules/builder/formBanner'
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import DropdownMenuCheckboxItem from '@/components/ui/dropdown-menu/DropdownMenuCheckboxItem.vue'
 import type { BuilderField, FieldOptionEntry } from '@/types/form-builder'
 import {
     Type,
@@ -21,6 +29,8 @@ import {
     Heading as HeadingIcon,
     TextCursorInput,
     Minus,
+    MoreHorizontal,
+    Settings2,
     Trash2,
     Copy,
     GripVertical,
@@ -46,6 +56,10 @@ const emit = defineEmits<{
 function patch(partial: Partial<BuilderField>): void {
     emit('updateField', { ...props.field, ...partial })
 }
+
+const isContent = computed(() => ['heading', 'paragraph', 'divider'].includes(props.field.type))
+const hasAdvancedFlags = computed(() => !isContent.value)
+const hasOptions = computed(() => ['dropdown', 'checkbox', 'radio'].includes(props.field.type))
 
 const TYPE_CONFIG = {
     short_text: { icon: Type, label: 'Teks pendek', tone: 'neutral' },
@@ -144,23 +158,63 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
             >
                 {{ config.label }}
             </span>
-            <div class="ml-auto flex gap-0.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
-                <button
-                    type="button"
-                    class="text-muted-foreground hover:bg-muted hover:text-foreground grid size-7 place-items-center rounded-full transition-colors duration-200"
-                    title="Gandakan"
-                    @click.stop="emit('duplicate')"
-                >
-                    <Copy class="size-3.5" />
-                </button>
-                <button
-                    type="button"
-                    class="text-muted-foreground hover:bg-destructive/10 hover:text-destructive grid size-7 place-items-center rounded-full transition-colors duration-200"
-                    title="Hapus"
-                    @click.stop="emit('delete')"
-                >
-                    <Trash2 class="size-3.5" />
-                </button>
+            <div class="ml-auto shrink-0">
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <button
+                            type="button"
+                            class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground focus-visible:ring-ring/30 focus-visible:ring-[3px] data-[state=open]:bg-muted data-[state=open]:text-foreground"
+                            :class="isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'"
+                            aria-label="Aksi field"
+                        >
+                            <MoreHorizontal class="size-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" class="w-56">
+                        <DropdownMenuCheckboxItem
+                            v-if="!isContent"
+                            :checked="!!field.required"
+                            @select.prevent="patch({ required: !field.required })"
+                        >
+                            Wajib diisi
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            v-if="hasAdvancedFlags"
+                            :checked="!!field.is_append"
+                            @select.prevent="patch({ is_append: !field.is_append })"
+                        >
+                            Anggota tim bisa ubah
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                            v-if="hasAdvancedFlags"
+                            :checked="field.metadata?.duplicatable === true"
+                            @select.prevent="
+                                patch({
+                                    metadata: {
+                                        ...(field.metadata || {}),
+                                        duplicatable: !(field.metadata?.duplicatable === true),
+                                    },
+                                })
+                            "
+                        >
+                            Duplikat per peserta
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem v-if="hasOptions" @select="emit('manage')">
+                            <Settings2 class="mr-2 size-4" /> Kelola opsi…
+                        </DropdownMenuItem>
+                        <DropdownMenuItem v-else @select="emit('manage')">
+                            <Settings2 class="mr-2 size-4" /> Pengaturan…
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem @select="emit('duplicate')">
+                            <Copy class="mr-2 size-4" /> Gandakan
+                        </DropdownMenuItem>
+                        <DropdownMenuItem class="text-destructive focus:text-destructive" @select="emit('delete')">
+                            <Trash2 class="mr-2 size-4" /> Hapus
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
 
