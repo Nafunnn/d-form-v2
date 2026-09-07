@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'organizer' => \App\Http\Middleware\EnsureOrganizerDashboardAccess::class,
             'member_portal' => \App\Http\Middleware\EnsureMemberPortalAccess::class,
+            'recruitment.access' => \App\Http\Middleware\EnsureRecruitmentAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

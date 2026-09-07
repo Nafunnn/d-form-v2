@@ -62,6 +62,8 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->getRoleNames()->toArray(),
                     'has_local_password' => filled($user->getRawOriginal('password')),
                     'can_manage_events' => $user->can('events.list'),
+                    'can_access_recruitment' => $user->can('recruitment.dashboard.view'),
+                    'can_manage_recruitment_periods' => $user->can('recruitment.periods.list'),
                     'avatar' => UserAvatarService::resolvePublicUrl($user->avatar, $request),
                 ],
             ) : null,

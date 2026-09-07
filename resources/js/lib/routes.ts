@@ -39,7 +39,27 @@ export const routes = {
 
     admin: {
         index: ADMIN_BASE,
-        recruitment: `${ADMIN_BASE}/recruitment`,
+        recruitment: {
+            index: `${ADMIN_BASE}/recruitment`,
+            periods: {
+                index: `${ADMIN_BASE}/recruitment/periods`,
+                create: `${ADMIN_BASE}/recruitment/periods/create`,
+                store: `${ADMIN_BASE}/recruitment/periods`,
+                show: (id: string) => `${ADMIN_BASE}/recruitment/periods/${id}`,
+                edit: (id: string) => `${ADMIN_BASE}/recruitment/periods/${id}/edit`,
+                update: (id: string) => `${ADMIN_BASE}/recruitment/periods/${id}`,
+                open: (id: string) => `${ADMIN_BASE}/recruitment/periods/${id}/open`,
+                close: (id: string) => `${ADMIN_BASE}/recruitment/periods/${id}/close`,
+            },
+            divisions: {
+                index: `${ADMIN_BASE}/recruitment/divisions`,
+                update: (id: string) => `${ADMIN_BASE}/recruitment/divisions/${id}`,
+            },
+            interviewers: {
+                assign: `${ADMIN_BASE}/recruitment/interviewers/assign`,
+                unassign: (id: string) => `${ADMIN_BASE}/recruitment/interviewers/${id}`,
+            },
+        },
         events: {
             index: `${ADMIN_BASE}/events`,
             create: `${ADMIN_BASE}/events/create`,
@@ -108,6 +128,15 @@ export function isSidebarNavActive(href: string, currentUrl: string): boolean {
     }
     if (href === routes.member.joined) {
         return path === routes.member.joined;
+    }
+    if (href === routes.admin.recruitment.index) {
+        return path === routes.admin.recruitment.index;
+    }
+    if (href.startsWith(routes.admin.recruitment.periods.index)) {
+        return path.startsWith(routes.admin.recruitment.periods.index);
+    }
+    if (href.startsWith(routes.admin.recruitment.divisions.index)) {
+        return path.startsWith(routes.admin.recruitment.divisions.index);
     }
 
     return path.startsWith(href);
