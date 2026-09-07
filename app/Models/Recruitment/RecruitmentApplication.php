@@ -77,4 +77,19 @@ class RecruitmentApplication extends Model
     {
         return $this->hasOne(RecruitmentDocument::class, 'recruitment_application_id');
     }
+
+    public function interview(): HasOne
+    {
+        return $this->hasOne(RecruitmentInterview::class, 'recruitment_application_id');
+    }
+
+    public function queueEntry(): HasOne
+    {
+        return $this->hasOne(RecruitmentQueueEntry::class, 'recruitment_application_id');
+    }
+
+    public function finalDecision(): HasOne
+    {
+        return $this->hasOne(RecruitmentFinalDecision::class, 'recruitment_application_id');
+    }
 }

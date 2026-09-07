@@ -22,7 +22,11 @@ export const routes = {
         landing: '/open-recruitment',
         apply: '/open-recruitment/apply',
         success: '/open-recruitment/success',
-        track: '/open-recruitment/track',
+        track: {
+            login: '/open-recruitment/track',
+            dashboard: '/open-recruitment/track/dashboard',
+            logout: '/open-recruitment/track/logout',
+        },
     },
 
     auth: {

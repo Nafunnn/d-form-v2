@@ -50,6 +50,9 @@ defineProps<{
 
                 <div class="flex flex-wrap justify-center gap-3">
                     <Button as-child variant="outline">
+                        <Link :href="routes.openRecruitment.track.login">Pantau pendaftaran</Link>
+                    </Button>
+                    <Button as-child variant="outline">
                         <Link :href="routes.openRecruitment.landing">Kembali ke landing</Link>
                     </Button>
                 </div>

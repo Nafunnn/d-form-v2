@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Recruitment\ApplicationController;
 use App\Http\Controllers\Recruitment\LandingController;
+use App\Http\Controllers\Recruitment\TrackingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('open-recruitment')
@@ -16,6 +17,13 @@ Route::prefix('open-recruitment')
 
         Route::get('/success', [ApplicationController::class, 'success'])->name('success');
 
-        Route::get('/track', fn () => redirect()->route('open-recruitment.landing'))
-            ->name('track.login');
+        Route::get('/track', [TrackingController::class, 'login'])->name('track.login');
+        Route::post('/track', [TrackingController::class, 'authenticate'])
+            ->middleware('throttle:oprec-track')
+            ->name('track.authenticate');
+
+        Route::middleware('recruitment.tracking.session')->group(function (): void {
+            Route::get('/track/dashboard', [TrackingController::class, 'show'])->name('track.show');
+            Route::post('/track/logout', [TrackingController::class, 'logout'])->name('track.logout');
+        });
     });
