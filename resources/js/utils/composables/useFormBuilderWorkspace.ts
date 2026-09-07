@@ -139,6 +139,13 @@ export function useFormBuilderWorkspace(
         }
     }
 
+    /** Buka sheet kelola opsi / pengaturan field dari aksi kartu — jangan toggle-off bila sudah terpilih. */
+    function openFieldManage(id: string): void {
+        selectedFieldId.value = id
+        inspectorMode.value = 'field'
+        showMobileEditor.value = true
+    }
+
     function duplicateField(id: string): void {
         const i = models.formFields.value.findIndex((f) => f.id === id)
         if (i === -1) return
@@ -299,6 +306,7 @@ export function useFormBuilderWorkspace(
         patchBanner,
         addField,
         selectField,
+        openFieldManage,
         deleteField,
         duplicateField,
         updateField,

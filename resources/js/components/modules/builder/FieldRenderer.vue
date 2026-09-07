@@ -158,7 +158,31 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
             >
                 {{ config.label }}
             </span>
-            <div class="ml-auto shrink-0">
+            <div class="ml-auto flex shrink-0 items-center gap-0.5">
+                <!-- Aksi langsung: tampil saat kartu terpilih, hover/focus, atau perangkat sentuh (selalu). -->
+                <div
+                    class="flex items-center gap-0.5 transition-opacity duration-200"
+                    :class="isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100'"
+                >
+                    <button
+                        type="button"
+                        class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-muted hover:text-foreground"
+                        title="Gandakan"
+                        aria-label="Gandakan field"
+                        @click.stop="emit('duplicate')"
+                    >
+                        <Copy class="size-3.5" />
+                    </button>
+                    <button
+                        type="button"
+                        class="grid size-7 place-items-center rounded-full text-muted-foreground transition-colors duration-200 outline-none hover:bg-destructive/10 hover:text-destructive"
+                        title="Hapus"
+                        aria-label="Hapus field"
+                        @click.stop="emit('delete')"
+                    >
+                        <Trash2 class="size-3.5" />
+                    </button>
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <button
@@ -205,13 +229,6 @@ function choiceImageSrc(entry: FieldOptionEntry): string | undefined {
                         </DropdownMenuItem>
                         <DropdownMenuItem v-else @select="emit('manage')">
                             <Settings2 class="mr-2 size-4" /> Pengaturan…
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem @select="emit('duplicate')">
-                            <Copy class="mr-2 size-4" /> Gandakan
-                        </DropdownMenuItem>
-                        <DropdownMenuItem class="text-destructive focus:text-destructive" @select="emit('delete')">
-                            <Trash2 class="mr-2 size-4" /> Hapus
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

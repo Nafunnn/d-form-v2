@@ -77,12 +77,6 @@ function toggleFormSettings(): void {
     formSettingsOpen.value = !formSettingsOpen.value;
 }
 
-/** Buka sheet editor field (desktop & mobile) untuk id field dari kartu canvas. */
-function openFieldManage(id: string): void {
-    wb.selectField(id)
-    wb.showMobileEditor = true
-}
-
 /** Handle untuk aksi toolbar eksternal (Pratinjau / Save All) dari halaman induk. */
 defineExpose({
     showPreview: () => {
@@ -160,7 +154,7 @@ defineExpose({
                     @drag-end="wb.onDragEnd"
                     @select-field="wb.selectField"
                     @update-field="wb.updateField"
-                    @manage-field="openFieldManage"
+                    @manage-field="wb.openFieldManage"
                     @delete-field="wb.deleteField"
                     @duplicate-field="wb.duplicateField"
                     @move-field="wb.moveField"
